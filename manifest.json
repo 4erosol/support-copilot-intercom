@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "Support Copilot for Intercom",
+  "version": "4.0.0",
+  "description": "On-demand AI reply drafts, escalations, and conversation analysis for support teams working in Intercom",
+
+  "permissions": ["storage", "tabs"],
+
+  "host_permissions": [
+    "https://*.intercom.com/*",
+    "https://*.intercom.io/*",
+    "https://api.anthropic.com/*"
+  ],
+
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://*.intercom.com/*", "https://*.intercom.io/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+
+  "icons": {
+    "16":  "assets/icon-16.png",
+    "32":  "assets/icon-32.png",
+    "48":  "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Support Copilot",
+    "default_icon": {
+      "16":  "assets/icon-16.png",
+      "32":  "assets/icon-32.png",
+      "48":  "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    }
+  }
+}
