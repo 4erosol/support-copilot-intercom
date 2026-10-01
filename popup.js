@@ -249,8 +249,11 @@ $('btnTest').addEventListener('click', async () => {
   $('btnTest').disabled = true;
   const res = await chrome.runtime.sendMessage({ type: 'TEST_API_KEY', key });
   $('btnTest').disabled = false;
-  setSettingsStatus(res?.ok ? 'API key valid!' : `Invalid (${res?.status || res?.error || 'unknown'})`, res?.ok ? 'ok' : 'error');
-  setTimeout(() => setSettingsStatus(''), 3000);
+  setSettingsStatus(
+    res?.ok ? 'API key valid!' : `Error ${res?.status || ''}: ${res?.error || 'unknown'}`.trim(),
+    res?.ok ? 'ok' : 'error'
+  );
+  if (res?.ok) setTimeout(() => setSettingsStatus(''), 3000);
 });
 
 // ── Debug ─────────────────────────────────────────────────────────────────────

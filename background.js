@@ -310,6 +310,9 @@ async function testApiKey(key) {
       },
       body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 10, messages: [{ role: 'user', content: 'hi' }] })
     });
-    return { ok: res.ok, status: res.status };
+    if (res.ok) return { ok: true, status: res.status };
+    // Surface the API's own message: a 400 is usually billing ("credit balance is too low"), not a bad key
+    const err = await res.json().catch(() => ({}));
+    return { ok: false, status: res.status, error: err?.error?.message || res.statusText };
   } catch (err) { return { ok: false, error: err.message }; }
 }

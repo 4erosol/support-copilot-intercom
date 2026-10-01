@@ -11,6 +11,17 @@ The version in `manifest.json` is the source of truth. Bump it on every release.
 
 ---
 
+## [4.0.1] - 2026-10-01
+
+### Fixed
+- **"No conversation stream found" after another Intercom UI update.** The stream container is now found via `data-testid="conversation-stream-scroll-container"`, message IDs come from `data-part-entity-id`, and message text is read from `.interblocks-html` (previously the bare `p` fallback captured only the first paragraph of multi-paragraph messages).
+- **Role detection on the new UI.** Message rows no longer carry alignment classes, so roles now fall back to bubble position (left of the stream = customer, right = agent), which doesn't depend on class names.
+- **Customer name always showing as "Customer".** Header title attributes changed from `=""` to `="true"`; selectors now match on attribute presence.
+- **Draft injection into the new TipTap composer.** Drafts are inserted through a synthetic paste event so the editor's internal state stays in sync, with the old direct DOM write kept as a fallback.
+- **Test key button hid the real error.** It now shows the API's message (e.g. "credit balance is too low") instead of just the status code.
+
+---
+
 ## [4.0.0] - 2026-10-01
 
 Generalized from a single-company internal tool into an extension that works with any Intercom workspace.

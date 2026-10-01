@@ -56,6 +56,7 @@
   function extractConversation() {
     // ── Step 1: find the conversation stream container ──
     const streamSelectors = [
+      '[data-testid="conversation-stream-scroll-container"]',
       '[data-conversation-stream=""]',
       '[data-intercom-target-conversation-stream=""]',
       '.inbox-2__conversation-stream',
@@ -100,6 +101,7 @@
       const msgId = part.dataset?.partGroupId
                  || part.dataset?.partId
                  || part.dataset?.intercomPartId
+                 || part.closest?.('[data-part-entity-id]')?.dataset.partEntityId
                  || null;
       const category = part.dataset?.partGroupCategory || null;
       if (msgId) lastMsgId = msgId;
@@ -133,11 +135,23 @@
         }
       }
 
-      // Method 3: default to 'message' so it's still included in context
+      // Method 3: bubble position. Customer bubbles sit on the left of the stream,
+      // agent bubbles on the right. Doesn't depend on class names, so it survives
+      // Intercom's Tailwind refactors (as of mid-2026 rows carry no alignment class).
+      if (!role) {
+        const box = part.getBoundingClientRect();
+        const ref = stream.getBoundingClientRect();
+        if (box.width > 0 && ref.width > 0) {
+          role = (box.left + box.width / 2) > (ref.left + ref.width / 2) ? 'agent' : 'customer';
+        }
+      }
+
+      // Method 4: default to 'message' so it's still included in context
       if (!role) role = 'message';
 
       // ── Body text extraction with fallback selectors ──
       const bodySelectors = [
+        '.interblocks-html',
         '.inbox-2__break-words',
         '.inbox2__break-words',
         '.inbox-2__user-email-content',
@@ -168,8 +182,8 @@
 
     // ── Step 4: customer name ──
     const nameSelectors = [
-      '[data-inbox-conversation-header-title=""]',
-      '[data-conversation-title=""]',
+      '[data-inbox-conversation-header-title]',
+      '[data-conversation-title]',
       '.inbox-2__conversation-title',
       '.inbox2__conversation-title',
       '[class*="conversation-title"]',
@@ -199,11 +213,14 @@
   }
 
   // ── Inject text into Intercom compose box ────────────────────────────────────
-  // Finds the Intercom compose box (which is a ProseMirror editor) and injects our draft text into it.
-  // We create individual <p> elements for each line so Intercom preserves the line breaks correctly.
+  // Finds the Intercom compose box (a ProseMirror / TipTap editor) and injects our draft text into it.
+  // Preferred path: a synthetic paste, which goes through the editor's own input pipeline so its
+  // internal state stays in sync. Fallback: write <p> elements directly into the editable DOM.
   function injectText(text) {
-    const box = deepQuerySelector('.ProseMirror.embercom-prosemirror-composer-editor', document)
-             || deepQuerySelector('.embercom-prosemirror-composer-editor', document);
+    const box = deepQuerySelector('[data-conversation-reply-composer] .ProseMirror[contenteditable="true"]', document)
+             || deepQuerySelector('.ProseMirror.embercom-prosemirror-composer-editor', document)
+             || deepQuerySelector('.embercom-prosemirror-composer-editor', document)
+             || deepQuerySelector('.ProseMirror[contenteditable="true"]', document);
 
     if (!box) {
       debugLog('ERROR: Compose box not found for injection.');
@@ -211,6 +228,22 @@
     }
 
     box.focus();
+    document.execCommand('selectAll');
+
+    try {
+      const dt = new DataTransfer();
+      dt.setData('text/plain', text);
+      box.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      const firstLine = text.split('\n').find(l => l.trim())?.trim() || '';
+      if (firstLine && box.innerText.includes(firstLine.slice(0, 40))) {
+        debugLog('Text injected into compose box (paste).');
+        return true;
+      }
+      debugLog('Paste injection did not take, falling back to DOM write.');
+    } catch (err) {
+      debugLog(`Paste injection failed (${err.message}), falling back to DOM write.`);
+    }
+
     box.innerHTML = '';
 
     // Split into paragraphs and insert each as a <p> so Intercom renders line breaks properly
@@ -226,7 +259,7 @@
       box.dispatchEvent(new Event(e, { bubbles: true }))
     );
 
-    debugLog('Text injected into compose box.');
+    debugLog('Text injected into compose box (DOM write).');
     return true;
   }
 

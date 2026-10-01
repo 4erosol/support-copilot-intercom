@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Support Copilot for Intercom",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "On-demand AI reply drafts, escalations, and conversation analysis for support teams working in Intercom",
 
   "permissions": ["storage", "tabs"],
