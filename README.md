@@ -1,5 +1,7 @@
 # Support Copilot for Intercom
 
+**[Live demo and project page →](https://4erosol.github.io/support-copilot-intercom/)**
+
 A Chrome extension that gives customer support agents on-demand AI drafts inside Intercom: chat and email replies, internal notes, escalation write-ups, and a quick triage analysis of every conversation. It's powered by Claude.
 
 I built this while working as a Customer Care agent at a B2B SaaS company. I wasn't on the engineering team. I spotted a recurring pain point in my own day-to-day work, scoped a tool to fix it, and shipped it end to end with AI-assisted development. This repo is a generalized version that works with any Intercom workspace.
