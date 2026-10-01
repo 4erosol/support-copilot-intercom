@@ -4,6 +4,8 @@ A Chrome extension that gives customer support agents on-demand AI drafts inside
 
 I built this while working as a Customer Care agent at a B2B SaaS company. I wasn't on the engineering team. I spotted a recurring pain point in my own day-to-day work, scoped a tool to fix it, and shipped it end to end with AI-assisted development. This repo is a generalized version that works with any Intercom workspace.
 
+![Demo: one click generates the agent analysis and injects a chat reply into Intercom's composer](demo/demo.gif)
+
 ## The problem
 
 Support agents in a high-volume Intercom queue spend most of their time on work that isn't problem-solving:
@@ -25,6 +27,12 @@ One click in the extension popup:
 4. Injects the reply into Intercom's composer, ready to review and send. Escalations go to a copy panel instead, because they belong in other tools.
 
 ## Features
+
+<p>
+  <img src="demo/main.png" alt="Draft tab with reply and escalation modes" width="380">
+  &nbsp;
+  <img src="demo/settings.png" alt="Settings tab with API key, agent name, company, knowledge base URL, and tone instructions" width="380">
+</p>
 
 | Mode | What it produces | Where it goes |
 |---|---|---|
