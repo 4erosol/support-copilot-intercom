@@ -15,3 +15,17 @@ desktop.ini
 
 # Local secrets
 .env
+
+# impeccable-ignore-start
+# Ephemeral output, runtime state, and per-dev overrides.
+**/.impeccable/config.local.json
+**/.impeccable/hook.cache.json
+**/.impeccable/hook.pending.json
+**/.impeccable/*.png
+**/.impeccable/review/
+**/.impeccable/questions/
+**/.impeccable/live/
+# impeccable-ignore-end
+
+# Playwright CLI snapshots
+.playwright-cli/

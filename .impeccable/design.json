@@ -1,0 +1,424 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-02T18:00:00Z",
+  "title": "Design System: Support Copilot for Intercom",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Carbon Form Ink",
+        "canonical": "#1F35B5",
+        "tonalRamp": [
+          "#0B1240",
+          "#14205E",
+          "#1A2B8A",
+          "#1F35B5",
+          "#4A5FD0",
+          "#7D8DDE",
+          "#B3BDEE",
+          "#E4E8FA"
+        ]
+      },
+      "canary": {
+        "role": "secondary",
+        "displayName": "Canary Copy",
+        "canonical": "#FFDF3D",
+        "tonalRamp": [
+          "#4D3F00",
+          "#7A6500",
+          "#A88C00",
+          "#D4B200",
+          "#F2C800",
+          "#FFDF3D",
+          "#FFE968",
+          "#FFF6C2"
+        ]
+      },
+      "stamp": {
+        "role": "tertiary",
+        "displayName": "Stamp Red",
+        "canonical": "#CF2A1E",
+        "tonalRamp": [
+          "#3D0B07",
+          "#66140D",
+          "#931D14",
+          "#CF2A1E",
+          "#E0574C",
+          "#EB857D",
+          "#F4B5B0",
+          "#FCE5E3"
+        ]
+      },
+      "bond": {
+        "role": "neutral",
+        "displayName": "Bond White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#1A1C24",
+          "#3A3E4D",
+          "#5D6275",
+          "#858A9C",
+          "#AEB2C0",
+          "#D5D8E1",
+          "#F4F6FB",
+          "#FFFFFF"
+        ]
+      },
+      "bond-2": {
+        "role": "neutral",
+        "displayName": "Cool Bond",
+        "canonical": "#F4F6FB",
+        "tonalRamp": [
+          "#1A1C24",
+          "#3A3E4D",
+          "#5D6275",
+          "#858A9C",
+          "#AEB2C0",
+          "#D5D8E1",
+          "#F4F6FB",
+          "#FFFFFF"
+        ]
+      },
+      "ink-deep": {
+        "role": "neutral",
+        "displayName": "Deep Ink",
+        "canonical": "#14205E",
+        "tonalRamp": [
+          "#080D26",
+          "#0E1641",
+          "#14205E",
+          "#24317A",
+          "#3E4C96",
+          "#6B77B5",
+          "#A4ACD6",
+          "#DDE0F0"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Faded Ink",
+        "canonical": "#4A5488",
+        "tonalRamp": [
+          "#1C2036",
+          "#2C3253",
+          "#3B436E",
+          "#4A5488",
+          "#68719F",
+          "#8D94B8",
+          "#B8BDD4",
+          "#E3E5EF"
+        ]
+      },
+      "ink-on-canary": {
+        "role": "neutral",
+        "displayName": "Canary Shadow Ink",
+        "canonical": "#5C4A00",
+        "tonalRamp": [
+          "#1F1900",
+          "#3B2F00",
+          "#5C4A00",
+          "#7D6500",
+          "#A08300",
+          "#C7A600",
+          "#E8CC4D",
+          "#FAF0C2"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline Rule",
+        "canonical": "rgba(31, 53, 181, .32)",
+        "tonalRamp": [
+          "rgba(31,53,181,.9)",
+          "rgba(31,53,181,.7)",
+          "rgba(31,53,181,.55)",
+          "rgba(31,53,181,.42)",
+          "rgba(31,53,181,.32)",
+          "rgba(31,53,181,.22)",
+          "rgba(31,53,181,.12)",
+          "rgba(31,53,181,.05)"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Rule",
+        "canonical": "rgba(31, 53, 181, .7)",
+        "tonalRamp": [
+          "rgba(31,53,181,.95)",
+          "rgba(31,53,181,.85)",
+          "rgba(31,53,181,.7)",
+          "rgba(31,53,181,.55)",
+          "rgba(31,53,181,.42)",
+          "rgba(31,53,181,.3)",
+          "rgba(31,53,181,.18)",
+          "rgba(31,53,181,.08)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The page title only; Archivo 800 at 72% width, clamp(42px, 5vw, 72px), balanced wrap."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headings, max 18ch."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Ticket numbers and instruction rows (26px), install step counters (34px), condensed 68% in ink."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Row heads in tables, step names, fact heads (16-17px bold)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text; ledes 18px within 50-58ch."
+      },
+      "body-small": {
+        "displayName": "Body small",
+        "purpose": "Stub subjects, composer notes, captions."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Ink and line buttons."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Printed labels on the form, column heads, sheet captions, byline and terminal head; uppercase, ink. Never a kicker above a heading."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Message sender lines and the form foot, uppercase."
+      },
+      "stamp": {
+        "displayName": "Stamp",
+        "purpose": "Static rubber stamps on the guardrail sheets only."
+      },
+      "typed": {
+        "displayName": "Typed",
+        "purpose": "Courier Prime for annotations and machine text: guardrail superscripts and notes, filenames and code in How it works, install inline code, the terminal (15px/1.8)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sheet-on-desk",
+        "value": "0 1px 0 var(--ink), 0 24px 48px -28px rgba(20, 32, 94, .35)",
+        "purpose": "The demo form and the attached screen recording."
+      },
+      {
+        "name": "product-shot",
+        "value": "0 10px 28px -12px rgba(20, 32, 94, .35)",
+        "purpose": "The real popup screenshots."
+      },
+      {
+        "name": "popup-on-table",
+        "value": "0 14px 36px -10px rgba(20, 32, 94, .35), 0 2px 6px rgba(20, 32, 94, .12)",
+        "purpose": "The popup replica on the canary agent side."
+      },
+      {
+        "name": "tab-underline",
+        "value": "inset 0 -3px 0 var(--ink)",
+        "purpose": "Current section tab."
+      },
+      {
+        "name": "filled-ring",
+        "value": "0 0 0 4px rgba(31, 53, 181, .12)",
+        "purpose": "Composer once a draft is pasted."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Page easing for button presses and the composer ring."
+      },
+      {
+        "name": "state",
+        "value": "0.2s",
+        "purpose": "Hover and colour changes on buttons, tabs and stubs."
+      },
+      {
+        "name": "composer-flash",
+        "value": "0.9s ease, from box-shadow 0 0 0 8px rgba(31, 53, 181, .22)",
+        "purpose": "A draft landing in the composer."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all durations 0s",
+        "purpose": "prefers-reduced-motion: reduce collapses every animation and transition."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "two-column-stack",
+        "value": "960px"
+      },
+      {
+        "name": "form-stack",
+        "value": "860px"
+      },
+      {
+        "name": "masthead-strip",
+        "value": "760px"
+      },
+      {
+        "name": "phone",
+        "value": "520px"
+      }
+    ],
+    "productReplica": {
+      "source": "popup.html",
+      "scope": ".cp inside the canary agent side of the demo form",
+      "rule": "Exact copy of popup.html; never restyled toward the page, and none of its tokens, emoji, radii or system font are used outside it.",
+      "pageOwned": [
+        "canary table it sits on",
+        "outer drop shadow (popup-on-table)",
+        "max-width 420px within the agent side"
+      ]
+    }
+  },
+  "components": [
+    {
+      "name": "Ink Button",
+      "kind": "button",
+      "refersTo": "button-ink",
+      "description": "Primary action: ink fill, square, condensed bold label.",
+      "html": "<a class=\"ds-btn-ink\" href=\"#\">Install in 3 minutes <svg width=\"17\" height=\"17\" viewBox=\"0 0 256 256\" aria-hidden=\"true\"><path d=\"M40 128h176M144 56l72 72-72 72\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"24\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></a>",
+      "css": ".ds-btn-ink { display: inline-flex; align-items: center; gap: 10px; padding: 13px 20px; font-family: var(--sans); font-size: 15px; font-weight: 700; font-stretch: 90%; text-decoration: none; background: var(--ink); color: var(--bond); border: 1.5px solid var(--ink); border-radius: 0; transition: background .2s, color .2s, transform .2s var(--ease); } .ds-btn-ink:hover { background: var(--ink-deep); border-color: var(--ink-deep); } .ds-btn-ink:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; } .ds-btn-ink:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Line Button",
+      "kind": "button",
+      "refersTo": "button-line",
+      "description": "Secondary action: white with ink border and ink text.",
+      "html": "<a class=\"ds-btn-line\" href=\"#\">Read the changelog</a>",
+      "css": ".ds-btn-line { display: inline-flex; align-items: center; gap: 10px; padding: 13px 20px; font-family: var(--sans); font-size: 15px; font-weight: 700; font-stretch: 90%; text-decoration: none; background: var(--bond); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 0; transition: background .2s, transform .2s var(--ease); } .ds-btn-line:hover { background: var(--bond-2); } .ds-btn-line:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; } .ds-btn-line:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Copy Button",
+      "kind": "button",
+      "refersTo": "button-copy",
+      "description": "Small line button for copying the terminal command.",
+      "html": "<button class=\"ds-copy\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 256 256\" aria-hidden=\"true\"><rect x=\"88\" y=\"88\" width=\"128\" height=\"128\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"20\"/><path d=\"M168 88V40H40v128h48\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"20\"/></svg>Copy</button>",
+      "css": ".ds-copy { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; font-family: var(--sans); font-size: 12.5px; font-weight: 700; border: 1.5px solid var(--ink); border-radius: 0; color: var(--ink); background: var(--bond); cursor: pointer; transition: background .2s; } .ds-copy:hover { background: var(--bond-2); } .ds-copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; } .ds-copy:disabled { opacity: .4; cursor: default; }"
+    },
+    {
+      "name": "Instructions Box",
+      "kind": "card",
+      "refersTo": "instructions-row",
+      "description": "Flat printed numbered list in the opening section: ink border, hairline rows, condensed numerals.",
+      "html": "<ol class=\"ds-instr\"><li><span><b>Open a conversation in Intercom.</b></span></li><li><span><b>Click the extension and pick what you need:</b> a chat or email reply, a handoff note, or an escalation.</span></li><li><span><b>Review and send.</b> Escalations stay in the extension.</span></li></ol>",
+      "css": ".ds-instr { list-style: none; counter-reset: i; margin: 0; padding: 0; border: 1.5px solid var(--ink); background: var(--bond); font-family: var(--sans); } .ds-instr li { counter-increment: i; display: grid; grid-template-columns: 40px 1fr; align-items: baseline; padding: 12px 16px 12px 14px; font-size: 15.5px; line-height: 1.55; color: var(--ink-soft); border-top: 1px solid var(--rule); } .ds-instr li:first-child { border-top: 0; } .ds-instr li::before { content: counter(i); font-size: 26px; line-height: 1; font-weight: 800; font-stretch: 68%; color: var(--ink); } .ds-instr b { color: var(--ink-deep); font-weight: 700; }"
+    },
+    {
+      "name": "Composer",
+      "kind": "input",
+      "refersTo": "composer",
+      "description": "The Intercom composer on the customer copy; a pasted draft flashes an ink ring, then holds a soft one.",
+      "html": "<div class=\"ds-composer ds-composer-filled\">Hi Carlos,\n\nThank you for following up, and sorry for the trouble getting into your account.</div>",
+      "css": ".ds-composer { border: 1.5px solid var(--rule-strong); min-height: 120px; padding: 14px 16px; font-family: var(--sans); font-size: 15px; line-height: 1.55; white-space: pre-wrap; color: var(--ink-deep); background: var(--bond); border-radius: 0; transition: border-color .3s, box-shadow .4s var(--ease); } .ds-composer-filled { border-color: var(--ink); box-shadow: 0 0 0 4px rgba(31, 53, 181, .12); animation: ds-flash .9s ease; } @keyframes ds-flash { from { box-shadow: 0 0 0 8px rgba(31, 53, 181, .22); } }"
+    },
+    {
+      "name": "Ticket Stubs",
+      "kind": "chip",
+      "refersTo": "ticket-stub",
+      "description": "Tear-off stubs with a perforated left edge; the selected stub turns canary.",
+      "html": "<div class=\"ds-stubs\"><button class=\"ds-stub\" aria-pressed=\"true\"><span class=\"ds-stub-no\">#4471</span><span class=\"ds-stub-who\">Carlos Mendez</span><span class=\"ds-stub-what\">Email: Can't log in</span></button><button class=\"ds-stub\" aria-pressed=\"false\"><span class=\"ds-stub-no\">#4486</span><span class=\"ds-stub-who\">Priya Raman</span><span class=\"ds-stub-what\">Chat: Charged twice</span></button></div>",
+      "css": ".ds-stubs { display: flex; border: 1.5px solid var(--ink); background: var(--bond); } .ds-stub { position: relative; flex: 1 1 0; min-width: 190px; text-align: left; display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; padding: 12px 18px 12px 22px; border: 0; border-right: 1px solid var(--rule); background: none; font-family: var(--sans); cursor: pointer; transition: background .25s; } .ds-stub::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 3px; background: radial-gradient(circle, var(--rule-strong) 1.1px, transparent 1.4px) 0 0 / 3px 7px repeat-y; } .ds-stub:hover { background: var(--bond-2); } .ds-stub:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; } .ds-stub[aria-pressed=\"true\"] { background: var(--canary); } .ds-stub-no { grid-row: span 2; font-size: 26px; font-weight: 800; font-stretch: 68%; letter-spacing: -.02em; color: var(--ink); } .ds-stub-who { font-size: 14px; font-weight: 700; color: var(--ink-deep); } .ds-stub-what { font-size: 12.5px; color: var(--ink-soft); } .ds-stub[aria-pressed=\"true\"] .ds-stub-what { color: var(--ink-on-canary); }"
+    },
+    {
+      "name": "Section Tabs",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Masthead tabs as bordered cells; the current section carries an inset ink underline.",
+      "html": "<nav class=\"ds-tabs\"><a href=\"#\" aria-current=\"true\">Demo</a><a href=\"#\">Guardrails</a><a href=\"#\">How it works</a><a href=\"#\" class=\"ds-tab-ink\">GitHub</a></nav>",
+      "css": ".ds-tabs { display: flex; height: 60px; border-bottom: 1.5px solid var(--ink); background: var(--bond); } .ds-tabs a { display: flex; align-items: center; padding: 0 18px; font-family: var(--sans); font-size: 14px; font-weight: 600; text-decoration: none; color: var(--ink-soft); border-left: 1px solid var(--rule); transition: color .2s, background .2s; } .ds-tabs a:hover { color: var(--ink-deep); background: var(--bond-2); } .ds-tabs a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; } .ds-tabs a[aria-current=\"true\"] { color: var(--ink-deep); box-shadow: inset 0 -3px 0 var(--ink); } .ds-tabs a.ds-tab-ink { color: var(--ink); border-right: 1px solid var(--rule); }"
+    },
+    {
+      "name": "Stamp",
+      "kind": "custom",
+      "refersTo": "stamp",
+      "description": "Static rubber stamp on the guardrail sheets: REJECTED in stamp red, APPROVED in ink.",
+      "html": "<div class=\"ds-stamp-row\"><span class=\"ds-stamp\">Rejected</span><span class=\"ds-stamp ds-stamp-ok\">Approved</span></div>",
+      "css": ".ds-stamp-row { display: flex; gap: 32px; padding: 24px; background: var(--bond); } .ds-stamp { display: inline-block; font-family: var(--sans); font-size: 15px; font-weight: 800; font-stretch: 75%; letter-spacing: .08em; text-transform: uppercase; line-height: 1.1; color: var(--stamp); border: 2.5px solid var(--stamp); padding: 5px 9px; transform: rotate(-6deg); opacity: .9; mix-blend-mode: multiply; } .ds-stamp-ok { color: var(--ink); border-color: var(--ink); }"
+    },
+    {
+      "name": "Popup Screenshots",
+      "kind": "card",
+      "refersTo": "product-shot",
+      "description": "Two-up frame for real product screenshots: 8px product radius, strong-rule border, product-shot shadow, caption below.",
+      "html": "<div class=\"ds-shots\"><figure class=\"ds-shot\"><div class=\"ds-shot-img\"></div><figcaption>Draft tab</figcaption></figure><figure class=\"ds-shot\"><div class=\"ds-shot-img\"></div><figcaption>Settings tab</figcaption></figure></div>",
+      "css": ".ds-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; padding: 16px; background: var(--bond); } .ds-shot { margin: 0; } .ds-shot-img { aspect-ratio: 420 / 560; background: #F7F8FB; border: 1px solid var(--rule-strong); border-radius: 8px; box-shadow: 0 10px 28px -12px rgba(20, 32, 94, .35); } .ds-shot figcaption { margin-top: 8px; font-family: var(--sans); font-size: 13.5px; color: var(--ink-soft); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Carbonless Triage Form",
+    "overview": "The page is a printed business form. It uses bond-white and canary sheets, with every rule, label and stub printed in a single carbon-blue form ink. One stamp red is kept for marks that say \"rejected, do not send\". The demo form is split by a perforation. The white customer copy holds the Intercom thread and composer. The canary agent copy is a table on which the real extension popup sits, reproduced exactly. White is what the customer sees. Canary is what only the agent sees.\n\nDensity is that of a working form, not a brochure. The page uses hairline rules, small tracked labels, numbered printed boxes, and condensed heavy headlines that read like a form title. Courier Prime is reserved for marginal annotations, filenames and the terminal. Interaction is quiet. Picking a reply in the popup pastes it into the composer with a brief ink flash. Picking an escalation keeps it inside the popup. Page corners are square. Product evidence keeps its own shape: the recording, the popup screenshots and the popup replica. Product evidence lifts off the page; everything else is flat ruled paper.",
+    "keyCharacteristics": [
+      "Two paper colours carry meaning: bond-white is customer-facing, canary is agent-only.",
+      "One ink for all page structure; no second accent hue.",
+      "Stamp red only for rejected, do-not-send marks.",
+      "Archivo across widths for the page; Courier Prime only for annotations, filenames, code and the terminal.",
+      "Square corners, hairline and 1.5px ink rules, perforations and tear-off stubs as native devices.",
+      "The real product appears as itself: a faithful popup replica plus real recordings and screenshots. It is exempt from the page's world rules."
+    ],
+    "rules": [
+      {
+        "name": "The Two Copies Rule",
+        "body": "Bond-white carries customer-facing content; canary carries agent-only content. Never put text the customer will receive on canary.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Ink Rule",
+        "body": "All page structure is printed in Carbon Form Ink and its tints. There is no second accent hue; emphasis comes from weight, width and ink depth. The replica's indigo belongs to the product, not to the page.",
+        "section": "colors"
+      },
+      {
+        "name": "The Stamp Red Rule",
+        "body": "Stamp red marks only things that must not be sent. It is never an error colour, a link colour, or decoration. An approved stamp is printed in ink, not red.",
+        "section": "colors"
+      },
+      {
+        "name": "The Typewriter Rule",
+        "body": "Courier Prime is for annotations and machine text: margin notes, filenames, code and the terminal. Never use it for headings, labels or prose.",
+        "section": "typography"
+      },
+      {
+        "name": "The Width Axis Rule",
+        "body": "Hierarchy rides the width axis. Use 68-75% for titles, numerals and stamps, 85-90% for labels, brand and buttons, and 100% for reading text. Don't introduce a second sans on the page.",
+        "section": "typography"
+      },
+      {
+        "name": "The Evidence Lift Rule",
+        "body": "Only product evidence lifts off the page: the live demo form, the real screen recording, the real popup screenshots, and the popup replica on its canary table. Sections, guardrail sheets, the instructions box, tables and code panels are flat, bordered in ink.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Faithful Replica Rule",
+        "body": "The popup replica is a copy of popup.html, never a restyle. When the product's popup changes, copy the change across; never bend it toward the page's ink, type or corners, and never let its indigo, emoji, radii or system font spread into the page.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do print every rule, label, stub and page control in Carbon Form Ink; use ink-deep for reading text.",
+      "Do keep customer-facing content on bond-white and agent-only content on canary (The Two Copies Rule).",
+      "Do use ink-on-canary, not ink-soft, for secondary text on canary.",
+      "Do set annotations, filenames, code and terminal text in Courier Prime; everything else on the page in Archivo.",
+      "Do carry hierarchy on Archivo's width axis: 72% for headings, 90% for labels and buttons, 100% for body.",
+      "Do keep page corners square and borders at 1.5px ink (objects) or 1px rule (divisions).",
+      "Do keep the popup replica identical to popup.html (The Faithful Replica Rule)."
+    ],
+    "donts": [
+      "Don't use stamp red for errors, links, emphasis or decoration; it marks do-not-send only.",
+      "Don't add a third paper colour; the product's split is two-way.",
+      "Don't round page corners; only print artefacts and product evidence are round.",
+      "Don't lift anything but product evidence; no card shadows, no diagonal hard offset shadows.",
+      "Don't place uppercase labels above headings as kickers or eyebrows; the label style is for printed labels, column heads and sheet captions only.",
+      "Don't fill buttons with canary; canary is paper and highlighter.",
+      "Don't use emoji or the system font stack on the page; they belong only inside the popup replica.",
+      "Don't use Courier Prime for prose, headings or labels."
+    ]
+  }
+}

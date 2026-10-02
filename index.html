@@ -4,851 +4,735 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Support Copilot for Intercom</title>
-<meta name="description" content="A Chrome extension that drafts support replies, escalations, and triage analysis inside Intercom with one click. Powered by Claude.">
+<meta name="description" content="A Chrome extension that drafts Intercom replies, handoff notes and escalations in one click, and keeps every draft on the right side of the line. Powered by Claude.">
+<meta name="theme-color" content="#FFFFFF">
 <meta property="og:title" content="Support Copilot for Intercom">
-<meta property="og:description" content="One click: read the conversation, check the help center, draft the reply, flag what's missing.">
+<meta property="og:description" content="One click reads the Intercom conversation, checks your help center, drafts the reply or escalation, and routes each where it belongs.">
 <meta property="og:image" content="assets/icon-128.png">
 <link rel="icon" type="image/png" href="assets/icon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <style>
   :root {
-    --brand: #4F46E5;
-    --brand-2: #7C3AED;
-    --brand-hover: #4338CA;
-    --brand-soft: #EEF2FF;
-    --brand-soft-2: #E0E7FF;
-    --danger: #DC3838;
-    --danger-soft: #FFF1F1;
-    --success: #1FAA70;
+    /* paper */
+    --bond: #FFFFFF;
+    --bond-2: #F4F6FB;
+    --canary: #FFDF3D;
+    --canary-2: #FFE968;
+    --canary-deep: #F2C800;
+    /* ink */
+    --ink: #1F35B5;          /* form ink: rules, labels, controls */
+    --ink-deep: #14205E;     /* body text */
+    --ink-soft: #4A5488;     /* secondary text on bond */
+    --ink-on-canary: #5C4A00;/* secondary text on canary */
+    --rule: rgba(31, 53, 181, .32);
+    --rule-strong: rgba(31, 53, 181, .7);
+    --stamp: #CF2A1E;
 
-    --bg: #FBFBFE;
-    --bg-alt: #F3F4FA;
-    --surface: #FFFFFF;
-    --text: #0F172A;
-    --text-2: #475569;
-    --text-3: #94A3B8;
-    --border: #E5E7F0;
-    --border-strong: #D4D8E2;
-    --shadow-lg: 0 30px 80px -20px rgba(49, 46, 129, 0.25), 0 10px 30px -10px rgba(15, 23, 42, 0.12);
-    --shadow: 0 8px 24px -8px rgba(49, 46, 129, 0.15);
-    --grid: rgba(79, 70, 229, 0.06);
-    --code-bg: #0F172A;
-    --code-text: #E2E8F0;
-
-    --radius: 14px;
-    --radius-lg: 22px;
-    --serif: 'Instrument Serif', Georgia, serif;
-    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --brand: #818CF8;
-      --brand-2: #A78BFA;
-      --brand-hover: #A5B4FC;
-      --brand-soft: rgba(129, 140, 248, 0.12);
-      --brand-soft-2: rgba(129, 140, 248, 0.22);
-      --danger: #F87171;
-      --danger-soft: rgba(248, 113, 113, 0.1);
-      --success: #34D399;
-
-      --bg: #0A0B14;
-      --bg-alt: #0F1020;
-      --surface: #14152A;
-      --text: #EEF0FF;
-      --text-2: #A5ABC8;
-      --text-3: #6B7194;
-      --border: #24264A;
-      --border-strong: #33366A;
-      --shadow-lg: 0 30px 80px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(129, 140, 248, 0.08);
-      --shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
-      --grid: rgba(129, 140, 248, 0.05);
-      --code-bg: #07080F;
-    }
+    --sans: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --typed: 'Courier Prime', 'Courier New', monospace;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+    --gutter: clamp(16px, 3vw, 40px);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 72px; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
   body {
     font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    font-size: 16px;
+    font-size: 16px; line-height: 1.55;
+    color: var(--ink-deep); background: var(--bond);
     -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
     overflow-x: hidden;
   }
-  a { color: inherit; text-decoration: none; }
-  img { max-width: 100%; display: block; }
-  :focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 6px; }
+  ::selection { background: var(--canary); color: var(--ink-deep); }
+  a { color: inherit; }
+  img { display: block; max-width: 100%; height: auto; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  * { scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent; }
+  .ph, .ph-bold { line-height: 1; }
 
-  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
-  @media (max-width: 600px) { .wrap { padding: 0 16px; } }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 0 var(--gutter); }
+  .label {
+    font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+    font-stretch: 90%; color: var(--ink);
+  }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  /* ── Nav ─────────────────────────────────────────── */
-  nav {
-    position: sticky; top: 0; z-index: 50;
-    backdrop-filter: saturate(180%) blur(14px);
-    -webkit-backdrop-filter: saturate(180%) blur(14px);
-    background: color-mix(in srgb, var(--bg) 78%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  /* ── Header band ─────────────────────────────── */
+  .masthead {
+    position: sticky; top: 0; z-index: 40;
+    background: var(--bond); border-bottom: 1.5px solid var(--ink);
   }
-  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
-  .logo img { width: 28px; height: 28px; }
-  .nav-links { display: flex; align-items: center; gap: 28px; font-size: 14px; color: var(--text-2); font-weight: 500; }
-  .nav-links a:not(.btn):hover { color: var(--text); }
-  @media (max-width: 760px) { .nav-links a:not(.btn) { display: none; } }
+  .masthead .wrap { display: flex; align-items: center; height: 60px; gap: 24px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; font-stretch: 85%; font-size: 17px; letter-spacing: -.01em; color: var(--ink-deep); }
+  .brand img { width: 26px; height: 26px; }
+  .tabs { display: flex; margin-left: auto; height: 100%; }
+  .tabs a {
+    display: flex; align-items: center; padding: 0 18px; height: 100%;
+    font-size: 14px; font-weight: 600; text-decoration: none; color: var(--ink-soft);
+    border-left: 1px solid var(--rule);
+    transition: color .2s, background .2s;
+  }
+  .tabs a:hover { color: var(--ink-deep); background: var(--bond-2); }
+  .tabs a[aria-current="true"] { color: var(--ink-deep); box-shadow: inset 0 -3px 0 var(--ink); }
+  .tabs a.gh { gap: 8px; color: var(--ink); border-right: 1px solid var(--rule); }
+  .tabs a.gh i { font-size: 18px; }
+  @media (max-width: 760px) {
+    html { scroll-padding-top: 112px; }
+    .masthead .wrap { flex-wrap: wrap; height: auto; padding-top: 10px; column-gap: 12px; row-gap: 8px; }
+    .brand { height: 36px; }
+    .tabs { order: 3; width: calc(100% + 2 * var(--gutter)); margin: 0 calc(-1 * var(--gutter)); height: 44px; overflow-x: auto; border-top: 1px solid var(--rule); scrollbar-width: none; }
+    .tabs a { padding: 0 16px; white-space: nowrap; }
+    .tabs a:first-child { border-left: 0; }
+    .tabs a.gh { margin-left: auto; }
+  }
 
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 18px; border-radius: 999px;
-    font-weight: 600; font-size: 14px; letter-spacing: -0.005em;
-    transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
-    cursor: pointer; border: 1px solid transparent; white-space: nowrap;
+  /* ── Intro ───────────────────────────────────── */
+  .intro {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: clamp(28px, 4vw, 64px);
+    align-items: center; padding: clamp(32px, 4.5vw, 64px) 0 clamp(56px, 7vw, 96px);
   }
-  .btn svg { width: 16px; height: 16px; }
-  .btn-primary { background: var(--text); color: var(--bg); }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
-  .btn-ghost { border-color: var(--border-strong); color: var(--text); background: var(--surface); }
-  .btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
-  .btn-lg { padding: 14px 24px; font-size: 15px; }
-
-  /* ── Hero ────────────────────────────────────────── */
-  .hero { position: relative; padding: 88px 0 40px; text-align: center; overflow: hidden; }
-  .hero::before {
-    content: ''; position: absolute; inset: 0; z-index: -2;
-    background-image:
-      linear-gradient(var(--grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
-    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
-  }
-  .hero::after {
-    content: ''; position: absolute; z-index: -1;
-    width: 900px; height: 600px; left: 50%; top: -200px; transform: translateX(-50%);
-    background: radial-gradient(closest-side, color-mix(in srgb, var(--brand) 22%, transparent), transparent);
-    filter: blur(40px);
-  }
-  .pill {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 14px 6px 6px; border-radius: 999px;
-    background: var(--surface); border: 1px solid var(--border);
-    font-size: 13px; color: var(--text-2); font-weight: 500;
-    box-shadow: 0 1px 2px rgba(0,0,0,.04);
-  }
-  .pill b {
-    background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff;
-    font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: .02em;
-  }
+  .intro-text { display: flex; flex-direction: column; gap: 22px; }
   h1 {
-    font-size: clamp(40px, 7vw, 80px); line-height: 1.02; letter-spacing: -0.045em;
-    font-weight: 800; margin: 26px auto 22px; max-width: 900px;
+    font-size: clamp(42px, 5vw, 72px); line-height: .95; letter-spacing: -.035em;
+    font-weight: 800; font-stretch: 72%; text-wrap: balance; color: var(--ink-deep);
   }
-  h1 em, h2 em {
-    font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.02em;
-    background: linear-gradient(120deg, var(--brand) 10%, var(--brand-2) 90%);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    padding-right: .06em;
+  .lede { font-size: 18px; line-height: 1.5; color: var(--ink-deep); max-width: 50ch; }
+  ol.instr { list-style: none; counter-reset: i; border: 1.5px solid var(--ink); }
+  ol.instr li {
+    counter-increment: i; display: grid; grid-template-columns: 40px 1fr; align-items: baseline;
+    padding: 12px 16px 12px 14px; font-size: 15.5px; color: var(--ink-soft); border-top: 1px solid var(--rule);
   }
-  .lede { font-size: clamp(17px, 2.2vw, 20px); color: var(--text-2); max-width: 640px; margin: 0 auto; line-height: 1.55; }
-  .hero-ctas { display: flex; gap: 12px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
-  .hero-meta { margin-top: 22px; font-size: 13px; color: var(--text-3); display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
-  .hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
-  .hero-meta svg { width: 14px; height: 14px; color: var(--success); }
-
-  /* Browser frame */
-  .browser {
-    margin: 64px auto 0; max-width: 1040px;
-    border-radius: var(--radius-lg); overflow: hidden;
-    background: var(--surface); border: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
-    transform: perspective(2000px) rotateX(8deg) scale(.97);
-    transform-origin: top center;
-    transition: transform .9s cubic-bezier(.2,.8,.2,1);
+  ol.instr li:first-child { border-top: 0; }
+  ol.instr li::before { content: counter(i); font-size: 26px; line-height: 1; font-weight: 800; font-stretch: 68%; color: var(--ink); }
+  ol.instr b { color: var(--ink-deep); font-weight: 700; }
+  .byline { display: flex; gap: 10px; align-items: baseline; font-size: 14px; color: var(--ink-soft); }
+  .byline .label { flex-shrink: 0; }
+  .intro-rec { box-shadow: 0 1px 0 var(--ink), 0 24px 48px -28px rgba(20, 32, 94, .35); }
+  .demo-head { padding: clamp(32px, 4vw, 48px) 0 28px; border-top: 1.5px solid var(--ink); }
+  .demo-head b { color: var(--ink-deep); }
+  @media (max-width: 960px) { .intro { grid-template-columns: minmax(0, 1fr); } }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+    padding: 13px 20px; font-size: 15px; font-weight: 700; font-stretch: 90%; text-decoration: none;
+    border: 1.5px solid var(--ink); transition: background .2s, color .2s, transform .2s var(--ease);
   }
-  .browser.flat { transform: none; }
-  .browser-bar { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg-alt); }
-  .dots { display: flex; gap: 7px; }
-  .dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--border-strong); display: block; }
-  .dots i:nth-child(1) { background: #FF5F57; } .dots i:nth-child(2) { background: #FEBC2E; } .dots i:nth-child(3) { background: #28C840; }
-  .url { flex: 1; max-width: 460px; margin: 0 auto; font-size: 12px; color: var(--text-3); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; text-align: center; font-family: var(--mono); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .browser img { width: 100%; height: auto; background: #111; }
+  .btn i { font-size: 17px; }
+  .btn-ink { background: var(--ink); color: #fff; }
+  .btn-ink:hover { background: var(--ink-deep); border-color: var(--ink-deep); }
+  .btn-line { color: var(--ink); background: var(--bond); }
+  .btn-line:hover { background: var(--bond-2); }
+  .btn:active { transform: translateY(1px); }
 
-  /* ── Sections ────────────────────────────────────── */
-  section { padding: 110px 0; }
-  .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); margin-bottom: 14px; }
-  h2 { font-size: clamp(32px, 4.6vw, 52px); line-height: 1.08; letter-spacing: -0.035em; font-weight: 800; max-width: 760px; }
-  .section-lede { color: var(--text-2); font-size: 18px; max-width: 620px; margin-top: 18px; }
-  .center { text-align: center; }
-  .center h2, .center .section-lede { margin-left: auto; margin-right: auto; }
+  /* ── The form (demo) ─────────────────────────── */
+  .form { border: 1.5px solid var(--ink); background: var(--bond); box-shadow: 0 1px 0 var(--ink), 0 24px 48px -28px rgba(20, 32, 94, .35); }
 
-  /* Problem */
-  .problems { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 56px; }
-  @media (max-width: 960px) { .problems { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 560px) { .problems { grid-template-columns: 1fr; } }
-  .problem {
-    padding: 26px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border);
-    transition: transform .2s ease, border-color .2s ease;
+  .form-band {
+    display: flex; align-items: stretch; flex-wrap: wrap; border-bottom: 1.5px solid var(--ink);
   }
-  .problem:hover { transform: translateY(-3px); border-color: var(--brand-soft-2); }
-  .problem .num { font-family: var(--serif); font-style: italic; font-size: 38px; line-height: 1; color: var(--brand); }
-  .problem h3 { font-size: 17px; margin: 16px 0 8px; letter-spacing: -0.01em; }
-  .problem p { font-size: 14.5px; color: var(--text-2); line-height: 1.55; }
-
-  /* ── Interactive demo ────────────────────────────── */
-  .demo-section { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
-  .demo-grid { display: grid; grid-template-columns: 1fr 440px; gap: 28px; margin-top: 56px; align-items: start; }
-  @media (max-width: 980px) { .demo-grid { grid-template-columns: 1fr; } }
-
-  .convo {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-    box-shadow: var(--shadow); overflow: hidden;
+  .band-label { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 12px 18px; border-right: 1px solid var(--rule); }
+  .band-label small { font-size: 12px; color: var(--ink-soft); }
+  .tickets { display: flex; flex: 1; min-width: 0; overflow-x: auto; }
+  .ticket {
+    position: relative; flex: 1 1 0; min-width: 190px; text-align: left;
+    display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center;
+    padding: 12px 18px 12px 22px; border-right: 1px solid var(--rule);
+    transition: background .25s;
   }
-  .convo-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-  .avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; }
-  .avatar.c { background: linear-gradient(135deg, #F59E0B, #EF4444); }
-  .avatar.a { background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
-  .convo-head .who { font-weight: 600; font-size: 15px; }
-  .convo-head .sub { font-size: 12.5px; color: var(--text-3); }
-  .chip { margin-left: auto; font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); }
-  .convo-body { padding: 22px 20px; display: flex; flex-direction: column; gap: 18px; }
-  .msg { display: flex; gap: 10px; align-items: flex-end; max-width: 92%; }
-  .msg .bubble { padding: 12px 16px; border-radius: 16px; font-size: 14.5px; line-height: 1.55; }
-  .msg.customer .bubble { background: var(--bg-alt); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-  .msg.agent { align-self: flex-end; flex-direction: row-reverse; }
-  .msg.agent .bubble { background: #4F46E5; color: #fff; border-bottom-right-radius: 4px; }
-  .msg .avatar { width: 28px; height: 28px; font-size: 11px; }
-  .composer { margin: 0 20px 20px; border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; min-height: 120px; font-size: 14.5px; position: relative; background: var(--surface); transition: border-color .3s, box-shadow .3s; }
-  .composer.filled { border-color: var(--brand); box-shadow: 0 0 0 4px var(--brand-soft); }
-  .composer .ph { color: var(--text-3); }
-  .composer-text { white-space: pre-wrap; }
-  .composer-foot { display: flex; justify-content: space-between; align-items: center; margin: -8px 20px 20px; font-size: 12px; color: var(--text-3); }
-  .send { background: var(--border); color: var(--text-3); padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 12.5px; transition: background .3s, color .3s; }
-  .send.ready { background: #4F46E5; color: #fff; }
-
-  /* Popup replica */
-  .popup {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg); overflow: hidden; font-size: 13px; position: sticky; top: 88px;
+  /* perforated stub edge */
+  .ticket::before {
+    content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 3px;
+    background: radial-gradient(circle, var(--rule-strong) 1.1px, transparent 1.4px) 0 0 / 3px 7px repeat-y;
   }
-  @media (max-width: 980px) { .popup { position: static; } }
-  .popup-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
-  .popup-head img { width: 26px; height: 26px; }
-  .popup-head .t { font-weight: 600; font-size: 12.5px; line-height: 1.2; }
-  .popup-head .s { font-size: 11px; color: var(--text-3); }
-  .popup-tabs { margin-left: auto; display: flex; gap: 2px; }
-  .popup-tabs span { font-size: 11px; padding: 5px 10px; border-radius: 6px; color: var(--text-2); font-weight: 500; }
-  .popup-tabs span.on { background: #4F46E5; color: #fff; }
+  .ticket .no { grid-row: span 2; font-size: 26px; font-weight: 800; font-stretch: 68%; letter-spacing: -.02em; color: var(--ink); }
+  .ticket .who { font-size: 14px; font-weight: 700; color: var(--ink-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ticket .what { font-size: 12.5px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ticket:hover { background: var(--bond-2); }
+  .ticket[aria-pressed="true"] { background: var(--canary); }
+  .ticket[aria-pressed="true"] .what { color: var(--ink-on-canary); }
+  .band-note { display: flex; align-items: center; gap: 10px; padding: 10px 18px; font-size: 12.5px; color: var(--ink-soft); max-width: 330px; }
+  .band-note i { font-size: 20px; color: var(--ink); flex-shrink: 0; }
 
-  .analysis { padding: 12px 16px; border-bottom: 1px solid var(--border); display: none; }
-  .analysis.show { display: block; animation: fadeUp .4s ease; }
-  .analysis-label { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--brand); margin-bottom: 8px; display: flex; gap: 8px; align-items: center; }
-  .analysis-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .a-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .a-cell { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; }
-  .a-cell.full { grid-column: span 2; }
-  .a-cell .l { font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text-3); margin-bottom: 3px; }
-  .a-cell .v { font-size: 11.5px; line-height: 1.45; min-height: 1.45em; }
-
-  .popup-body { padding: 14px 16px 16px; }
-  .p-label { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
-  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-  .mode {
-    display: flex; align-items: center; gap: 9px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px;
-    background: var(--surface); cursor: pointer; text-align: left; font: inherit; color: var(--text); font-size: 12px; font-weight: 600;
-    transition: border-color .15s, background .15s, box-shadow .15s, transform .06s;
+  .form-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1.08fr);
+    grid-template-areas: "cust perf agent";
   }
-  .mode:hover { border-color: var(--brand); background: var(--brand-soft); }
-  .mode.on { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 3px var(--brand-soft-2); }
-  .mode.esc:hover, .mode.esc.on { border-color: var(--danger); background: var(--danger-soft); }
-  .mode.esc.on { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }
-  .mode:active { transform: translateY(1px); }
-  .mode:disabled { opacity: .5; cursor: default; }
-  .mode .i { font-size: 15px; line-height: 1; }
-  .mode.wide { grid-column: span 2; }
+  .side-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 22px 0; }
+  .side-head span:last-child { font-size: 12.5px; color: var(--ink-soft); }
 
-  .out { display: none; margin-top: 4px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-  .out.show { display: block; animation: fadeUp .35s ease; }
-  .out.esc { border-color: var(--danger); }
-  .out-head { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; background: var(--bg-alt); color: var(--text-3); border-bottom: 1px solid var(--border); }
-  .out.esc .out-head { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
-  .out-head .badge { background: var(--brand-soft); color: var(--brand); padding: 2px 8px; border-radius: 10px; text-transform: none; letter-spacing: 0; font-weight: 600; }
-  .out.esc .out-head .badge { background: var(--danger); color: #fff; }
-  .out-text { padding: 12px; font-size: 12px; line-height: 1.55; white-space: pre-wrap; min-height: 90px; max-height: 260px; overflow: auto; }
-  .out.esc .out-text { font-family: var(--mono); font-size: 11.5px; }
-  .status { text-align: center; font-size: 11.5px; min-height: 18px; margin-top: 10px; color: var(--text-3); }
-  .status.info { color: var(--brand); } .status.ok { color: var(--success); }
-  .kb-note { display: none; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); background: var(--bg-alt); border: 1px dashed var(--border-strong); border-radius: 7px; padding: 6px 9px; margin-bottom: 10px; }
-  .kb-note.show { display: flex; }
-  .kb-note b { color: var(--text); font-weight: 600; }
+  .form-foot { display: flex; justify-content: space-between; gap: 6px 18px; flex-wrap: wrap; padding: 8px 18px; border-top: 1.5px solid var(--ink); font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-stretch: 90%; color: var(--ink); }
+  .form-foot b { font-weight: 800; }
 
-  .cursor::after { content: '▍'; color: var(--brand); animation: blink 1s steps(1) infinite; margin-left: 1px; }
-  .shimmer { display: block; height: 10px; border-radius: 4px; background: linear-gradient(90deg, var(--border) 0%, var(--bg-alt) 50%, var(--border) 100%); background-size: 200% 100%; animation: shimmer 1.1s linear infinite; }
-  .shimmer + .shimmer { margin-top: 5px; width: 70%; }
-  .demo-hint { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 18px; font-size: 13px; color: var(--text-3); }
-  .demo-hint kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; color: var(--text-2); background: var(--surface); }
+  /* customer side: the page ground the Intercom replica sits on */
+  .cust { grid-area: cust; display: flex; flex-direction: column; min-width: 0; padding: 14px 22px 22px; }
+  .cust .side-head { padding: 0 0 12px; }
+  .cust-note { min-height: 20px; margin-top: 10px; font-size: 13px; color: var(--ink-soft); }
+  .cust-note b { color: var(--ink-deep); }
 
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  @keyframes blink { 50% { opacity: 0; } }
-  @keyframes shimmer { to { background-position: -200% 0; } }
-
-  /* ── How it works ────────────────────────────────── */
-  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 64px; position: relative; }
-  @media (max-width: 900px) { .flow { grid-template-columns: 1fr 1fr; gap: 32px 0; } }
-  @media (max-width: 520px) { .flow { grid-template-columns: 1fr; } }
-  .step { padding: 0 22px; position: relative; }
-  .step:not(:last-child)::after {
-    content: ''; position: absolute; top: 27px; left: calc(22px + 56px + 12px); right: 10px; height: 2px;
-    background: repeating-linear-gradient(90deg, var(--border-strong) 0 6px, transparent 6px 12px);
+  /* ── Intercom replica: new inbox, dark theme, as in the real recording ── */
+  .ic {
+    --ic-bg: #1C1D21; --ic-head: #1F2024; --ic-card: #2B2C31; --ic-admin: #253149; --ic-line: #34363C;
+    --ic-text: #ECEDEF; --ic-muted: #9A9CA4; --ic-field: #222327;
+    flex: 1; display: flex; flex-direction: column; min-height: 640px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; font-size: 14px; line-height: 1.5;
+    font-variant-numeric: normal; color: var(--ic-text); background: var(--ic-bg);
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 14px 36px -10px rgba(20, 32, 94, .45), 0 2px 6px rgba(20, 32, 94, .15);
   }
-  @media (max-width: 900px) { .step::after { display: none; } }
-  .step-icon {
-    width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
-    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); color: var(--brand); position: relative; z-index: 1;
+  .ic-head { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--ic-head); border-bottom: 1px solid var(--ic-line); }
+  .ic-ico { font-size: 18px; color: var(--ic-muted); }
+  .ic-who { min-width: 0; flex: 1; }
+  .ic-name { font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .ic-subj { font-size: 12.5px; color: var(--ic-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ic-tools { display: flex; align-items: center; gap: 6px; }
+  .ic-tools > i { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: #2A2B30; font-size: 16px; color: #C9CBD1; }
+  .ic-close { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: #ECEDEF; color: #1C1D21; font-size: 15px; }
+
+  .ic-thread { flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 20px 16px; }
+  .ic-msg { display: flex; align-items: flex-end; gap: 8px; max-width: 88%; }
+  .ic-msg.email { max-width: 100%; width: 100%; }
+  .ic-msg.admin { align-self: flex-end; flex-direction: row-reverse; }
+  .ic-av { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #1C1D21; background: #C9A94A; }
+  .ic-msg.admin .ic-av { background: #7C8CF8; }
+  .ic-bubble { min-width: 0; padding: 10px 14px; border-radius: 14px; background: var(--ic-card); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .ic-msg.admin .ic-bubble { background: var(--ic-admin); }
+  .ic-msg.email .ic-bubble { flex: 1; padding: 16px 18px 12px; border-radius: 12px; }
+  .ic-meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px; color: var(--ic-muted); white-space: normal; }
+  .ic-msg:not(.email) .ic-meta { margin-top: 4px; }
+
+  .ic-composer { margin: 0 12px 12px; background: var(--ic-field); border: 1px solid var(--ic-line); border-radius: 12px; transition: border-color .3s, box-shadow .4s var(--ease); }
+  .ic-composer.filled { border-color: #6B7BF0; }
+  .ic-composer.flash { animation: icflash .9s ease; }
+  @keyframes icflash { from { box-shadow: 0 0 0 6px rgba(124, 140, 248, .35); } }
+  .ic-channel { display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px 0; font-size: 13px; font-weight: 600; }
+  .ic-channel i { font-size: 15px; }
+  .ic-body { min-height: 120px; max-height: 300px; overflow: auto; padding: 8px 14px 6px; white-space: pre-wrap; }
+  .ic-ph { color: var(--ic-muted); }
+  .ic-foot { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px 10px 14px; }
+  .ic-foot-tools { display: flex; gap: 12px; font-size: 17px; color: var(--ic-muted); }
+  .ic-send { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; background: #3A3B40; color: #8D8F96; transition: background .3s, color .3s; }
+  .ic-send-div { width: 1px; height: 14px; background: currentColor; opacity: .35; }
+  .ic-send.ready { background: #ECEDEF; color: #1C1D21; }
+
+  /* perforation */
+  .perf { grid-area: perf; position: relative; display: flex; justify-content: center; background: var(--canary); }
+  .perf::before {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 15px; background: var(--bond);
   }
-  .step-icon svg { width: 24px; height: 24px; }
-  .step-icon.par { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; border: 0; }
-  .step h3 { font-size: 17px; margin: 22px 0 8px; letter-spacing: -0.01em; }
-  .step p { font-size: 14.5px; color: var(--text-2); }
-  .step code { font-family: var(--mono); font-size: 12.5px; background: var(--bg-alt); border: 1px solid var(--border); padding: 1px 6px; border-radius: 5px; }
-
-  /* ── Modes bento ─────────────────────────────────── */
-  .bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 56px; }
-  @media (max-width: 900px) { .bento { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 560px) { .bento { grid-template-columns: 1fr; } }
-  .card { padding: 26px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); position: relative; overflow: hidden; }
-  .card .tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; margin-bottom: 16px; }
-  .tag.inj { background: var(--brand-soft); color: var(--brand); }
-  .tag.cp { background: var(--danger-soft); color: var(--danger); }
-  .card h3 { font-size: 19px; letter-spacing: -0.015em; margin-bottom: 8px; display: flex; gap: 10px; align-items: center; }
-  .card p { font-size: 14.5px; color: var(--text-2); }
-
-  /* ── Guardrails ──────────────────────────────────── */
-  .guard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; margin-top: 8px; }
-  @media (max-width: 900px) { .guard-grid { grid-template-columns: 1fr; gap: 36px; } }
-  .rules { display: flex; flex-direction: column; gap: 4px; margin-top: 32px; }
-  .rule { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
-  .rule:last-child { border-bottom: 0; }
-  .rule .x { flex-shrink: 0; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: var(--brand-soft); color: var(--brand); }
-  .rule .x svg { width: 15px; height: 15px; }
-  .rule b { display: block; font-size: 15px; margin-bottom: 2px; }
-  .rule span { font-size: 14px; color: var(--text-2); }
-
-  .compare { display: flex; flex-direction: column; gap: 14px; }
-  .cmp { border-radius: var(--radius); padding: 20px 22px; border: 1px solid var(--border); background: var(--surface); position: relative; }
-  .cmp .who { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-  .cmp.bad .who { color: var(--danger); } .cmp.good .who { color: var(--success); }
-  .cmp p { font-size: 15px; line-height: 1.6; }
-  .cmp.bad p mark { background: color-mix(in srgb, var(--danger) 16%, transparent); color: inherit; padding: 0 3px; border-radius: 3px; text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--danger) 60%, transparent); }
-  .cmp.good { border-color: color-mix(in srgb, var(--success) 40%, var(--border)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 8%, transparent); }
-
-  /* ── Timeline ────────────────────────────────────── */
-  .timeline { margin-top: 64px; position: relative; }
-  .timeline::before { content: ''; position: absolute; left: 119px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--brand), var(--brand-2), transparent); opacity: .35; }
-  @media (max-width: 700px) { .timeline::before { left: 7px; } }
-  .tl { display: grid; grid-template-columns: 120px 1fr; gap: 36px; padding-bottom: 44px; position: relative; }
-  @media (max-width: 700px) { .tl { grid-template-columns: 1fr; gap: 8px; padding-left: 32px; } }
-  .tl-ver { font-family: var(--serif); font-size: 34px; font-style: italic; line-height: 1; color: var(--brand); text-align: right; padding-right: 30px; position: relative; }
-  .tl-ver small { display: block; font-family: var(--sans); font-style: normal; font-size: 12px; color: var(--text-3); margin-top: 6px; letter-spacing: .02em; }
-  .tl-ver::after { content: ''; position: absolute; right: -8px; top: 10px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 3px solid var(--brand); }
-  @media (max-width: 700px) {
-    .tl-ver { text-align: left; padding-right: 0; display: flex; align-items: baseline; gap: 12px; }
-    .tl-ver small { margin-top: 0; }
-    .tl-ver::after { left: -32px; right: auto; top: 8px; }
+  .perf::after {
+    content: ''; position: absolute; top: 46px; bottom: 10px; left: 50%; width: 6px; transform: translateX(-50%);
+    background: radial-gradient(circle, var(--ink) 1.6px, transparent 2px) 0 0 / 6px 11px repeat-y;
+    opacity: .75;
   }
-  .tl-body h3 { font-size: 20px; letter-spacing: -0.015em; margin-bottom: 8px; }
-  .tl-body p { color: var(--text-2); font-size: 15px; max-width: 640px; }
-  .tl-body .lesson { margin-top: 12px; font-size: 14px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--brand); padding: 10px 14px; border-radius: 8px; max-width: 640px; }
-  .tl-body .lesson b { color: var(--brand); }
+  .perf i { position: relative; z-index: 1; align-self: flex-start; margin-top: 12px; font-size: 22px; color: var(--ink); transform: rotate(-90deg); background: var(--bond); border-radius: 50%; padding: 2px; }
 
-  /* ── Architecture ────────────────────────────────── */
-  .arch { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 0; margin-top: 56px; }
-  @media (max-width: 900px) { .arch { grid-template-columns: 1fr; gap: 0; } }
-  .node { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
-  .node .file { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--brand); margin-bottom: 6px; }
-  .node h3 { font-size: 16px; margin-bottom: 10px; }
-  .node ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-  .node li { font-size: 13.5px; color: var(--text-2); padding-left: 16px; position: relative; }
-  .node li::before { content: ''; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 2px; background: var(--brand-soft-2); }
-  .arrow { display: grid; place-items: center; padding: 0 12px; color: var(--text-3); }
-  .arrow svg { width: 28px; height: 28px; }
-  @media (max-width: 900px) { .arrow { padding: 10px 0; } .arrow svg { transform: rotate(90deg); } }
-  .stack { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 32px; }
-  .stack span { font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); }
+  /* agent side: the canary table the real popup sits on */
+  .agent-side { grid-area: agent; min-width: 0; background: var(--canary); padding: 14px 22px 26px; }
+  .agent-side .side-head { padding: 0 0 12px; }
+  .agent-side .side-head span:last-child { color: var(--ink-on-canary); }
 
-  /* ── Setup ───────────────────────────────────────── */
-  .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 56px; align-items: start; }
-  @media (max-width: 900px) { .setup-grid { grid-template-columns: 1fr; } }
-  .steps { counter-reset: s; display: flex; flex-direction: column; gap: 22px; }
-  .steps li { list-style: none; counter-increment: s; display: flex; gap: 16px; }
-  .steps li::before { content: counter(s); flex-shrink: 0; width: 32px; height: 32px; border-radius: 10px; background: var(--text); color: var(--bg); font-weight: 700; display: grid; place-items: center; font-size: 14px; }
-  .steps b { display: block; font-size: 16px; margin-bottom: 3px; }
-  .steps span { color: var(--text-2); font-size: 14.5px; }
-  .steps code, .faq code { font-family: var(--mono); font-size: 12.5px; background: var(--bg-alt); border: 1px solid var(--border); padding: 1px 6px; border-radius: 5px; }
-  .term { background: var(--code-bg); color: var(--code-text); border-radius: var(--radius); padding: 0; overflow: hidden; box-shadow: var(--shadow-lg); font-family: var(--mono); font-size: 13px; }
-  .term-bar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
-  .term-bar .t { color: #64748B; font-size: 12px; }
-  .term pre { padding: 18px 20px; overflow-x: auto; line-height: 1.8; }
-  .term .c { color: #64748B; } .term .p { color: #A5B4FC; } .term .s { color: #86EFAC; }
-  .copy-btn { margin-left: auto; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); color: #CBD5E1; font: 500 11px var(--sans); padding: 4px 10px; border-radius: 6px; cursor: pointer; }
-  .copy-btn:hover { background: rgba(255,255,255,.12); }
-
-  /* ── CTA / footer ────────────────────────────────── */
-  .cta {
-    margin: 0 auto; max-width: 1040px; text-align: center; padding: 80px 32px; border-radius: 28px; position: relative; overflow: hidden;
-    background: radial-gradient(120% 120% at 50% 0%, #6366F1 0%, #4F46E5 40%, #3730A3 100%); color: #fff;
+  /* ── Popup replica: values copied from popup.html ── */
+  .cp {
+    --brand: #4F46E5; --brand-hover: #4338CA; --brand-soft: #EEF2FF; --brand-soft-2: #E0E7FF;
+    --text: #0F172A; --text-secondary: #5A627A; --text-muted: #9097AB; --text-on-brand: #FFFFFF;
+    --bg: #F7F8FB; --surface: #FFFFFF; --border: #E8EAF0; --border-strong: #D4D8E2;
+    --success: #1FAA70; --danger: #DC3838; --danger-soft: #FFF1F1;
+    --radius-sm: 6px; --radius: 8px;
+    --shadow-sm: 0 1px 2px rgba(79, 70, 229, 0.05);
+    width: 100%; max-width: 420px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    font-size: 13px; line-height: normal; color: var(--text); background: var(--bg);
+    font-variant-numeric: normal;
+    border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden;
+    box-shadow: 0 14px 36px -10px rgba(20, 32, 94, .35), 0 2px 6px rgba(20, 32, 94, .12);
   }
-  .cta::before {
-    content: ''; position: absolute; inset: 0;
-    background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
-    background-size: 40px 40px; mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%); -webkit-mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%);
+  .cp button { font-family: inherit; }
+  .cp-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 16px 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .cp-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .cp-brand img { height: 26px; width: 26px; flex-shrink: 0; }
+  .cp-brand-wrap { min-width: 0; }
+  .cp-title { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .cp-sub { font-size: 11px; color: var(--text-muted); line-height: 1.3; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cp-tabs { display: flex; gap: 2px; flex-shrink: 0; }
+  .cp-tab { color: var(--text-secondary); border-radius: var(--radius-sm); padding: 5px 10px; font-size: 11px; font-weight: 500; }
+  .cp-tab { transition: background 0.12s, color 0.12s; }
+  .cp-tab:hover { background: var(--brand-soft); color: var(--brand); }
+  .cp-tab.active { background: var(--brand); color: var(--text-on-brand); }
+
+  .cp-analysis { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 16px; display: none; }
+  .cp-analysis.visible { display: block; animation: cpIn .25s ease; }
+  .cp-analysis-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--brand); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .cp-analysis-label::before { content: ''; width: 14px; height: 14px; background: var(--brand); -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83'/></svg>") center/contain no-repeat; }
+  .cp-analysis-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .cp-agrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .cp-cell { background: var(--bg); border-radius: var(--radius-sm); padding: 8px 10px; border: 1px solid var(--border); }
+  .cp-cell.full { grid-column: span 2; }
+  .cp-cell-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 3px; }
+  .cp-cell-value { font-size: 11px; color: var(--text); line-height: 1.45; }
+
+  .cp-main { padding: 14px 16px; }
+  .cp-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 8px; }
+  .cp-section .optional { font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .cp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .cp-btn {
+    display: flex; align-items: center; gap: 9px; padding: 11px 12px; text-align: left;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm);
+    transition: border-color 0.12s, background 0.12s, transform 0.06s, box-shadow 0.12s;
   }
-  .cta > * { position: relative; }
-  .cta h2 { margin: 0 auto; color: #fff; }
-  .cta h2 em { background: none; color: #C7D2FE; -webkit-text-fill-color: #C7D2FE; }
-  .cta p { color: #C7D2FE; font-size: 18px; margin: 16px auto 32px; max-width: 520px; }
-  .cta .btn-primary { background: #fff; color: #312E81; }
-  .cta .btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.35); }
-  .cta .btn-ghost:hover { border-color: #fff; color: #fff; }
-  @media (max-width: 600px) { .cta { padding: 56px 20px; border-radius: 20px; } }
+  .cp-btn:hover { border-color: var(--brand); background: var(--brand-soft); }
+  .cp-btn.active { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 3px var(--brand-soft-2); }
+  .cp-btn:active:not(:disabled) { transform: translateY(1px); }
+  .cp-btn:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
+  .cp-btn .icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
+  .cp-btn .lbl { font-size: 12px; font-weight: 600; color: var(--text); }
+  .cp-btn.escalation:hover { border-color: var(--danger); background: var(--danger-soft); }
+  .cp-btn.escalation.active { border-color: var(--danger); background: var(--danger-soft); box-shadow: 0 0 0 3px #FFE0E0; }
+  .cp-btn.wide { grid-column: span 2; }
+  .cp :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
-  footer { padding: 56px 0 48px; color: var(--text-3); font-size: 14px; }
-  .foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .foot a { color: var(--text-2); font-weight: 500; }
-  .foot a:hover { color: var(--brand); }
-  .foot-links { display: flex; gap: 22px; }
+  .cp textarea {
+    display: block; width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 12px; font-family: inherit; background: var(--surface); color: var(--text); resize: none; outline: none; line-height: 1.5;
+  }
+  .cp textarea { transition: border-color 0.12s, box-shadow 0.12s; }
+  .cp textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+  .cp #escalationText:focus { box-shadow: none; border: none; }
+  .cp textarea::placeholder { color: var(--text-muted); }
+  .cp-extra { margin-bottom: 12px; }
+  .cp-extra .cp-section { margin-bottom: 6px; }
+  .cp-extra textarea { height: 56px; }
 
-  /* Reveal on scroll */
-  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
-  .reveal.in { opacity: 1; transform: none; }
+  .cp-draft { display: none; margin-top: 12px; }
+  .cp-draft.visible { display: block; animation: cpIn .25s ease; }
+  .cp-draft-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+  .cp-badge { font-size: 10px; background: var(--brand-soft); color: var(--brand); padding: 3px 8px; border-radius: 10px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+  .cp #draftText { height: 150px; }
+  .cp-draft-actions { display: flex; gap: 7px; margin-top: 8px; }
+  .cp-insert { flex: 1; padding: 9px; background: var(--brand); color: var(--text-on-brand); border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; box-shadow: var(--shadow-sm); transition: background 0.12s; }
+  .cp-insert:hover { background: var(--brand-hover); }
+  .cp-copy { padding: 9px 14px; background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; transition: border-color 0.12s, background 0.12s, color 0.12s; }
+  .cp-copy:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+
+  .cp-esc { display: none; margin-top: 12px; background: var(--surface); border: 1px solid var(--danger); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .cp-esc.visible { display: block; animation: cpIn .25s ease; }
+  .cp-esc-head { background: var(--danger-soft); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--danger); }
+  .cp-esc-title { font-size: 11px; font-weight: 700; color: var(--danger); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+  .cp-esc-title::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--danger); }
+  .cp-copy-esc { padding: 5px 12px; background: var(--danger); color: #fff; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; transition: opacity 0.12s; }
+  .cp-copy-esc:hover { opacity: 0.88; }
+  .cp #escalationText { height: 190px; border: none; border-radius: 0; font-family: 'SF Mono', Menlo, Consolas, 'Courier New', monospace; padding: 12px; }
+
+  .cp-status { font-size: 11.5px; min-height: 18px; margin-top: 10px; text-align: center; color: var(--text-muted); transition: color 0.12s; }
+  .cp-status.ok { color: var(--success); }
+  .cp-status.info { color: var(--brand); }
+  @keyframes cpIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .composer.flash { animation: flash .9s ease; }
+  @keyframes flash { from { box-shadow: 0 0 0 8px rgba(31, 53, 181, .22); } }
+  .stamp {
+    pointer-events: none; font-size: 15px; font-weight: 800; font-stretch: 75%; letter-spacing: .08em; text-transform: uppercase; line-height: 1.1;
+    color: var(--stamp); border: 2.5px solid var(--stamp); padding: 5px 9px; text-align: center; transform: rotate(-6deg); mix-blend-mode: multiply;
+  }
+
+  @media (max-width: 860px) {
+    .form-body {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "cust" "perf" "agent";
+      grid-template-rows: none;
+    }
+    .perf { height: 30px; background: var(--canary); align-items: center; }
+    .perf::before { top: 0; bottom: auto; left: 0; right: 0; width: auto; height: 15px; }
+    .perf::after { top: 50%; bottom: auto; left: 46px; right: 10px; width: auto; height: 6px; transform: translateY(-50%); background: radial-gradient(circle, var(--ink) 1.6px, transparent 2px) 0 0 / 11px 6px repeat-x; }
+    .perf i { position: absolute; left: 12px; top: 50%; margin: 0; transform: translateY(-50%); }
+    .band-note { max-width: none; border-top: 1px solid var(--rule); width: 100%; }
+  }
+  @media (max-width: 520px) {
+    .cust { padding-left: 12px; padding-right: 12px; }
+    .ic { min-height: 0; }
+    .agent-side { padding-left: 12px; padding-right: 12px; }
+    .band-label { flex-direction: row; align-items: baseline; gap: 8px; width: 100%; border-right: 0; border-bottom: 1px solid var(--rule); padding: 10px 16px; }
+    .tickets { flex: 1 1 100%; overflow: visible; }
+    .ticket { min-width: 0; padding: 10px 8px 10px 16px; column-gap: 8px; grid-template-columns: 1fr; }
+    .ticket .no { grid-row: auto; font-size: 22px; }
+    .ticket .what, .ticket .last { display: none; }
+    .ticket::before { left: 5px; }
+  }
+
+  /* ── Sections ────────────────────────────────── */
+  section { padding: clamp(72px, 9vw, 128px) 0; }
+  h2 {
+    font-size: clamp(36px, 4.6vw, 64px); line-height: .98; letter-spacing: -.03em;
+    font-weight: 800; font-stretch: 72%; text-wrap: balance; max-width: 18ch; color: var(--ink-deep);
+  }
+  .section-lede { margin-top: 18px; font-size: 18px; max-width: 58ch; color: var(--ink-soft); }
+
+  /* guardrails */
+  .proofs { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 48px; }
+  .sheet { position: relative; border: 1.5px solid var(--ink); background: var(--bond); padding: 22px 24px 24px; }
+  .sheet.bad { background: var(--bond-2); }
+  .sheet .label { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .sheet p.draft { font-size: 17px; line-height: 1.6; max-width: 52ch; }
+  .sheet mark {
+    background: none; color: inherit; text-decoration: line-through; text-decoration-color: var(--stamp); text-decoration-thickness: 2px;
+    box-shadow: inset 0 -.45em 0 rgba(207, 42, 30, .12);
+  }
+  .sheet sup { font-family: var(--typed); font-weight: 700; color: var(--stamp); font-size: 12px; margin-left: 2px; }
+  .notes { list-style: none; margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--rule-strong); display: grid; gap: 6px; }
+  .notes li { display: grid; grid-template-columns: 20px 1fr; font-family: var(--typed); font-size: 14px; color: var(--stamp); }
+  .sheet .stamp { position: absolute; top: 18px; right: 20px; opacity: .9; }
+  .sheet.good .stamp { color: var(--ink); border-color: var(--ink); }
+  .sheet.good .hl { box-shadow: inset 0 -.45em 0 rgba(255, 223, 61, .8); }
+  .sheet.good .why { list-style: none; margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--rule-strong); display: grid; gap: 6px; font-family: var(--typed); font-size: 14px; color: var(--ink); }
+
+  @media (max-width: 860px) { .proofs { grid-template-columns: minmax(0, 1fr); } }
+
+  /* how it works */
+  #how { border-top: 1.5px solid var(--ink); }
+  .how-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 56px); margin-top: 48px; align-items: start; }
+  table.route { width: 100%; border-collapse: collapse; border: 1.5px solid var(--ink); }
+  .route th { text-align: left; padding: 10px 16px; border-bottom: 1.5px solid var(--ink); background: var(--bond-2); }
+  .route td { padding: 16px; vertical-align: top; border-top: 1px solid var(--rule); font-size: 15px; color: var(--ink-soft); }
+  .route tr:first-child td { border-top: 0; }
+  .route td b { display: block; color: var(--ink-deep); font-size: 16px; margin-bottom: 2px; }
+  .route td.file { font-family: var(--typed); font-size: 14px; color: var(--ink); white-space: nowrap; border-left: 1px solid var(--rule); }
+  .route code { font-family: var(--typed); font-size: 14px; color: var(--ink-deep); }
+  figure.rec { border: 1.5px solid var(--ink); background: var(--bond); }
+  figure.rec img { width: 100%; border-bottom: 1.5px solid var(--ink); background: var(--bond-2); }
+  figure.rec figcaption { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 12px 16px; font-size: 13.5px; color: var(--ink-soft); }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .shot img { width: 100%; border: 1px solid var(--rule-strong); border-radius: 8px; box-shadow: 0 10px 28px -12px rgba(20, 32, 94, .35); }
+  .shot figcaption { margin-top: 8px; font-size: 13.5px; color: var(--ink-soft); }
+  .facts { list-style: none; display: grid; grid-template-columns: 1fr 1fr; margin-top: 20px; border-top: 1px solid var(--rule); }
+  .facts li { padding: 12px 12px 0 0; font-size: 14.5px; color: var(--ink-soft); }
+  .facts b { display: block; color: var(--ink-deep); font-size: 15px; }
+  @media (max-width: 960px) { .how-grid { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 560px) {
+    .route thead { display: none; }
+    .route tr { display: grid; grid-template-columns: 1fr; border-top: 1px solid var(--rule); }
+    .route tr:first-child { border-top: 0; }
+    .route td { border: 0; padding: 14px 16px 0; }
+    .route td.file { border: 0; padding: 4px 16px 14px; }
+  }
+
+  /* install */
+  #install { background: var(--canary); border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
+  #install .section-lede { color: var(--ink-on-canary); }
+  .install-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 56px); margin-top: 48px; align-items: start; }
+  ol.steps { list-style: none; counter-reset: s; border-top: 1.5px solid var(--ink); }
+  ol.steps li { counter-increment: s; display: grid; grid-template-columns: 48px 1fr; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+  ol.steps li::before { content: counter(s); font-size: 34px; line-height: 1; font-weight: 800; font-stretch: 68%; color: var(--ink); }
+  ol.steps b { display: block; font-size: 17px; margin-bottom: 3px; }
+  ol.steps span { font-size: 15px; color: var(--ink-on-canary); }
+  ol.steps code { font-family: var(--typed); font-size: 14.5px; color: var(--ink-deep); background: rgba(255,255,255,.6); padding: 0 4px; }
+  .cmd { border: 1.5px solid var(--ink); background: var(--bond); }
+  .cmd-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--rule); }
+  .cmd pre { padding: 18px; overflow-x: auto; font-family: var(--typed); font-size: 15px; line-height: 1.8; color: var(--ink-deep); }
+  .cmd pre .c { color: var(--ink-soft); }
+  .cmd pre .p { color: var(--ink); font-weight: 700; }
+  .cmd-foot { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  @media (max-width: 860px) { .install-grid { grid-template-columns: minmax(0, 1fr); } }
+
+  footer { padding: 36px 0 44px; }
+  .foot { display: flex; justify-content: space-between; align-items: center; gap: 18px 32px; flex-wrap: wrap; font-size: 14.5px; color: var(--ink-soft); }
+  .foot a { color: var(--ink); font-weight: 600; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .foot a:hover { text-decoration-thickness: 2px; }
+  .foot nav { display: flex; gap: 22px; }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-    .reveal { opacity: 1; transform: none; }
-    .browser { transform: none; }
+    *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; }
   }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="wrap nav-inner">
-    <a href="#" class="logo"><img src="assets/icon.svg" alt="">Support Copilot</a>
-    <div class="nav-links">
-      <a href="#demo">Demo</a>
-      <a href="#how">How it works</a>
-      <a href="#story">Build story</a>
-      <a href="#setup">Setup</a>
-      <a class="btn btn-ghost" href="https://github.com/4erosol/support-copilot-intercom">
-        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        GitHub
-      </a>
-    </div>
-  </div>
-</nav>
-
-<!-- ── Hero ── -->
-<header class="hero">
+<header class="masthead">
   <div class="wrap">
-    <span class="pill"><b>v4.0</b> Open source Chrome extension for Intercom</span>
-    <h1>Support replies, drafted in <em>one click.</em></h1>
-    <p class="lede">Support Copilot reads the open Intercom conversation, checks your help center, and drafts the reply, the escalation, or the handoff note. It also tells you what's still missing before you hit send.</p>
-    <div class="hero-ctas">
-      <a class="btn btn-primary btn-lg" href="#demo">
-        Try the live demo
-        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.3 3.3a1 1 0 011.4 0l6 6a1 1 0 010 1.4l-6 6a1 1 0 01-1.4-1.4l4.3-4.3H3a1 1 0 110-2h11.6l-4.3-4.3a1 1 0 010-1.4z" clip-rule="evenodd"/></svg>
-      </a>
-      <a class="btn btn-ghost btn-lg" href="https://github.com/4erosol/support-copilot-intercom">View on GitHub</a>
-    </div>
-    <div class="hero-meta">
-      <span><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-4-4a1 1 0 011.4-1.4L8 12.6l7.3-7.3a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>No server, no build step</span>
-      <span><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-4-4a1 1 0 011.4-1.4L8 12.6l7.3-7.3a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>Bring your own Claude key</span>
-      <span><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-4-4a1 1 0 011.4-1.4L8 12.6l7.3-7.3a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>About a cent per conversation</span>
-    </div>
-
-    <div class="browser" id="heroBrowser">
-      <div class="browser-bar">
-        <div class="dots"><i></i><i></i><i></i></div>
-        <div class="url">app.intercom.com/a/inbox</div>
-        <div style="width:47px"></div>
-      </div>
-      <img src="demo/demo.gif" alt="Recording: clicking Email reply in the extension fills the agent analysis panel and injects a drafted reply into Intercom's composer" width="800" height="415" loading="eager">
-    </div>
+    <a href="#top" class="brand"><img src="assets/icon.svg" alt="">Support Copilot</a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#demo">Demo</a>
+      <a href="#guardrails">Guardrails</a>
+      <a href="#how">How it works</a>
+      <a href="#install">Install</a>
+      <a class="gh" href="https://github.com/4erosol/support-copilot-intercom"><i class="ph ph-github-logo" aria-hidden="true"></i>GitHub</a>
+    </nav>
   </div>
 </header>
 
-<!-- ── Problem ── -->
-<section id="problem">
+<main id="top">
   <div class="wrap">
-    <div class="reveal">
-      <p class="eyebrow">The problem</p>
-      <h2>Most of a support shift isn't <em>solving problems.</em></h2>
-      <p class="section-lede">I built this as a Customer Care agent at a B2B SaaS company, to fix the parts of my own day that had nothing to do with helping customers.</p>
-    </div>
-    <div class="problems">
-      <div class="problem reveal"><div class="num">01</div><h3>The same reply, again</h3><p>Rewriting near-identical answers all day while keeping the tone consistent with the team's style guide.</p></div>
-      <div class="problem reveal"><div class="num">02</div><h3>Escalations by hand</h3><p>Every Tier 2 ticket needs the same fields. One missing timestamp means another round trip with engineering.</p></div>
-      <div class="problem reveal"><div class="num">03</div><h3>Five tabs per ticket</h3><p>Conversation, help center, Slack, escalation queue, billing notes. Context switching eats the shift.</p></div>
-      <div class="problem reveal"><div class="num">04</div><h3>Confident fiction</h3><p>Pasting a thread into a generic chatbot gets you a fluent answer about a feature that doesn't exist.</p></div>
-    </div>
-  </div>
-</section>
+    <section class="intro" aria-labelledby="intro-h">
+      <div class="intro-text">
+        <h1 id="intro-h">Your Intercom replies, written in one click.</h1>
+        <p class="lede">Support Copilot is a free Chrome extension for support agents. Open a customer conversation in Intercom, pick what you need, and it drafts the reply from your own help center articles.</p>
+        <ol class="instr" aria-label="How it works">
+          <li><span><b>Open a conversation in Intercom.</b></span></li>
+          <li><span><b>Click the extension and pick what you need:</b> a chat or email reply, a handoff note, or an escalation for your team.</span></li>
+          <li><span><b>Review and send.</b> Replies appear in Intercom's reply box. Escalations stay in the extension, so a customer never sees them.</span></li>
+        </ol>
+        <div class="actions">
+          <a class="btn btn-ink" href="#demo">Try the demo <i class="ph-bold ph-arrow-down" aria-hidden="true"></i></a>
+          <a class="btn btn-line" href="#install">Install in 3 minutes</a>
+        </div>
+        <p class="byline"><span class="label">Built by</span><span>David Vasquez, a Customer Care agent, to fix his own queue.</span></p>
+      </div>
+      <figure class="rec intro-rec">
+        <img src="demo/demo.gif" alt="Screen recording: clicking Email reply in the extension fills the agent analysis panel and pastes a drafted reply into Intercom's reply box" width="800" height="415">
+        <figcaption><span>The real extension, recorded inside Intercom.</span><span>Screen recording</span></figcaption>
+      </figure>
+    </section>
 
-<!-- ── Interactive demo ── -->
-<section id="demo" class="demo-section">
-  <div class="wrap">
-    <div class="center reveal">
-      <p class="eyebrow">Live demo</p>
-      <h2>Pick a mode. <em>Watch it work.</em></h2>
-      <p class="section-lede">A working replica of the extension popup, running on a sample conversation. Replies land in the composer. Escalations stay in a copy panel so they never reach the customer.</p>
+    <div class="demo-head" id="demo">
+      <h2>Try it on a sample ticket.</h2>
+      <p class="section-lede">Pick a ticket, then tick what you need. <b>Left</b> is the Intercom conversation the customer is in. <b>Right</b> is the Support Copilot popup, which only you see.</p>
     </div>
 
-    <div class="demo-grid">
-      <!-- Fake Intercom conversation -->
-      <div class="convo reveal">
-        <div class="convo-head">
-          <div class="avatar c">CM</div>
-          <div>
-            <div class="who">Carlos Mendez</div>
-            <div class="sub">Email · I can't log in, password expired</div>
-          </div>
-          <span class="chip">Open</span>
-        </div>
-        <div class="convo-body">
-          <div class="msg customer">
-            <div class="avatar c">CM</div>
-            <div class="bubble">Hi team, I can't log in to the app. I keep getting an error that says <i>"Your password has expired."</i> Could you help me reset it or get back into my account?<br><br>Thanks,<br>Carlos</div>
-          </div>
-          <div class="msg agent">
-            <div class="avatar a">D</div>
-            <div class="bubble">Thanks Carlos, I'm taking a look now.</div>
-          </div>
-          <div class="msg customer">
-            <div class="avatar c">CM</div>
-            <div class="bubble">Great, it started this morning. I haven't changed anything.</div>
-          </div>
-        </div>
-        <div class="composer" id="composer">
-          <span class="ph" id="composerPh">Reply to Carlos…</span>
-          <span class="composer-text" id="composerText"></span>
-        </div>
-        <div class="composer-foot">
-          <span id="composerNote">Intercom composer</span>
-          <span class="send" id="sendBtn">Send</span>
-        </div>
+    <!-- ── Demo form ── -->
+    <div class="form" aria-label="Interactive demo">
+      <div class="form-band">
+        <div class="band-label"><span class="label">Sample ticket</span><small>Pick one</small></div>
+        <div class="tickets" id="tickets"></div>
+        <p class="band-note"><i class="ph ph-scissors" aria-hidden="true"></i><span>Nothing past the perforation reaches the customer. Sample data; drafts follow the extension's real prompt rules.</span></p>
       </div>
 
-      <!-- Popup replica -->
-      <div class="popup reveal" aria-label="Support Copilot popup replica">
-        <div class="popup-head">
-          <img src="assets/icon.svg" alt="">
-          <div>
-            <div class="t">Support Copilot</div>
-            <div class="s">Carlos Mendez · Email</div>
+      <div class="form-body">
+        <div class="cust">
+          <div class="side-head"><span class="label">Customer side</span><span>Intercom inbox, as it really looks</span></div>
+          <div class="ic" role="group" aria-label="Intercom conversation">
+            <div class="ic-head">
+              <i class="ph ph-sidebar-simple ic-ico" aria-hidden="true"></i>
+              <div class="ic-who"><div class="ic-name" id="icName"></div><div class="ic-subj" id="icSubj"></div></div>
+              <div class="ic-tools" aria-hidden="true"><i class="ph ph-dots-three"></i><i class="ph ph-moon"></i><span class="ic-close"><i class="ph-bold ph-check"></i></span></div>
+            </div>
+            <div class="ic-thread" id="thread"></div>
+            <div class="ic-composer" id="composer" aria-live="polite">
+              <div class="ic-channel" id="icChannel"></div>
+              <div class="ic-body"><span class="ic-ph" id="composerPh">Use Ctrl K for shortcuts</span><span id="composerText"></span></div>
+              <div class="ic-foot" aria-hidden="true">
+                <span class="ic-foot-tools"><i class="ph ph-lightning"></i><i class="ph ph-smiley"></i><i class="ph ph-paperclip"></i></span>
+                <span class="ic-send" id="send">Send<span class="ic-send-div"></span><i class="ph-bold ph-caret-down"></i></span>
+              </div>
+            </div>
           </div>
-          <div class="popup-tabs"><span class="on">Draft</span><span>Settings</span><span>Log</span></div>
+          <p class="cust-note" id="composerNote"></p>
         </div>
 
-        <div class="analysis" id="analysis">
-          <div class="analysis-label">Agent Analysis</div>
-          <div class="a-grid">
-            <div class="a-cell"><div class="l">Likely issue</div><div class="v" data-k="issue"></div></div>
-            <div class="a-cell"><div class="l">Category</div><div class="v" data-k="category"></div></div>
-            <div class="a-cell full"><div class="l">Missing info</div><div class="v" data-k="missing"></div></div>
-            <div class="a-cell full"><div class="l">Suggested next step</div><div class="v" data-k="next"></div></div>
+        <div class="perf" aria-hidden="true"><i class="ph ph-scissors"></i></div>
+
+        <div class="agent-side">
+          <div class="side-head"><span class="label">Agent side</span><span>The extension popup, as it really looks</span></div>
+          <div class="cp" role="group" aria-label="Support Copilot popup">
+            <div class="cp-header">
+              <div class="cp-brand">
+                <img src="assets/icon.svg" alt="">
+                <div class="cp-brand-wrap">
+                  <div class="cp-title">Support Copilot</div>
+                  <div class="cp-sub" id="convInfo">Open a conversation in Intercom</div>
+                </div>
+              </div>
+              <div class="cp-tabs" aria-hidden="true"><span class="cp-tab active">Draft</span><span class="cp-tab">Settings</span><span class="cp-tab">Log</span></div>
+            </div>
+
+            <div class="cp-analysis" id="analysisPanel">
+              <div class="cp-analysis-label">Agent Analysis</div>
+              <div class="cp-agrid">
+                <div class="cp-cell"><div class="cp-cell-label">Likely Issue</div><div class="cp-cell-value" id="valIssue"></div></div>
+                <div class="cp-cell"><div class="cp-cell-label">Category</div><div class="cp-cell-value" id="valCategory"></div></div>
+                <div class="cp-cell full"><div class="cp-cell-label">Missing Info</div><div class="cp-cell-value" id="valMissing"></div></div>
+                <div class="cp-cell full"><div class="cp-cell-label">Suggested Next Step</div><div class="cp-cell-value" id="valNext"></div></div>
+              </div>
+            </div>
+
+            <div class="cp-main">
+              <div class="cp-section">Replies</div>
+              <div class="cp-grid">
+                <button class="cp-btn" data-mode="chat"><span class="icon" aria-hidden="true">💬</span><span class="lbl">Chat reply</span></button>
+                <button class="cp-btn" data-mode="email"><span class="icon" aria-hidden="true">✉️</span><span class="lbl">Email reply</span></button>
+                <button class="cp-btn wide" data-mode="notes"><span class="icon" aria-hidden="true">📋</span><span class="lbl">Conversation notes</span></button>
+              </div>
+              <div class="cp-section">Escalations</div>
+              <div class="cp-grid">
+                <button class="cp-btn escalation" data-mode="tier2"><span class="icon" aria-hidden="true">🔧</span><span class="lbl">Tier 2 escalation</span></button>
+                <button class="cp-btn escalation" data-mode="slack"><span class="icon" aria-hidden="true">⚡</span><span class="lbl">Slack urgent</span></button>
+                <button class="cp-btn escalation wide" data-mode="billing"><span class="icon" aria-hidden="true">💳</span><span class="lbl">Billing escalation</span></button>
+              </div>
+              <div class="cp-extra">
+                <div class="cp-section">Extra context <span class="optional">(optional)</span></div>
+                <textarea readonly aria-label="Extra context, not used in this demo" placeholder="e.g. Customer is on the Pro plan. Already tried clearing cache. Error started after reconnecting their calendar integration."></textarea>
+              </div>
+
+              <div class="cp-draft" id="draftPanel">
+                <div class="cp-draft-label">Draft <span class="cp-badge" id="draftBadge"></span></div>
+                <textarea id="draftText" readonly aria-label="Draft"></textarea>
+                <div class="cp-draft-actions">
+                  <button class="cp-insert" id="btnInsert">Insert into Intercom</button>
+                  <button class="cp-copy" id="btnCopyDraft">Copy</button>
+                </div>
+              </div>
+
+              <div class="cp-esc" id="escalationPanel">
+                <div class="cp-esc-head">
+                  <span class="cp-esc-title" id="escalationTitle">Escalation Draft</span>
+                  <button class="cp-copy-esc" id="btnCopyEsc">Copy</button>
+                </div>
+                <textarea id="escalationText" readonly aria-label="Escalation draft"></textarea>
+              </div>
+
+              <div class="cp-status" id="statusBar" aria-live="polite"></div>
+            </div>
           </div>
         </div>
-
-        <div class="popup-body">
-          <div class="p-label">Replies</div>
-          <div class="modes">
-            <button class="mode" data-mode="chat"><span class="i">💬</span>Chat reply</button>
-            <button class="mode" data-mode="email"><span class="i">✉️</span>Email reply</button>
-            <button class="mode wide" data-mode="notes"><span class="i">📋</span>Conversation notes</button>
-          </div>
-          <div class="p-label">Escalations</div>
-          <div class="modes">
-            <button class="mode esc" data-mode="tier2"><span class="i">🔧</span>Tier 2 escalation</button>
-            <button class="mode esc" data-mode="slack"><span class="i">⚡</span>Slack urgent</button>
-            <button class="mode esc wide" data-mode="billing"><span class="i">💳</span>Billing escalation</button>
-          </div>
-
-          <div class="kb-note" id="kbNote">📚 <span>KB matched <b>"Resetting an expired password"</b></span></div>
-
-          <div class="out" id="out">
-            <div class="out-head"><span id="outTitle">Draft</span><span class="badge" id="outBadge"></span></div>
-            <div class="out-text" id="outText"></div>
-          </div>
-          <div class="status" id="status">Choose a mode to generate a draft.</div>
-        </div>
       </div>
-    </div>
-    <p class="demo-hint">Sample output, written to follow the extension's real prompt rules. Try <kbd>Tier 2 escalation</kbd> next.</p>
-  </div>
-</section>
-
-<!-- ── How it works ── -->
-<section id="how">
-  <div class="wrap">
-    <div class="reveal">
-      <p class="eyebrow">How it works</p>
-      <h2>Four steps, about <em>two seconds.</em></h2>
-    </div>
-    <div class="flow">
-      <div class="step reveal">
-        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-        <h3>Read the thread</h3>
-        <p>The content script walks Intercom's DOM, including shadow roots, and labels every message as customer, agent, bot, or system.</p>
-      </div>
-      <div class="step reveal">
-        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
-        <h3>Check the help center</h3>
-        <p>Keywords from the latest customer message query your KB. The top three articles go into the prompt as the only allowed source.</p>
-      </div>
-      <div class="step reveal">
-        <div class="step-icon par"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v18M16 3v18"/><path d="M4 7l4-4 4 4M12 17l4 4 4-4"/></svg></div>
-        <h3>Two calls in parallel</h3>
-        <p>One Claude call writes the draft. A second writes the triage analysis. <code>Promise.all</code> means the analysis adds no wait.</p>
-      </div>
-      <div class="step reveal">
-        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></div>
-        <h3>Land it in the right place</h3>
-        <p>Replies are pasted into Intercom's composer for review. Escalations go to a copy panel, never the customer-facing box.</p>
+      <div class="form-foot">
+        <span>Form SC-401, rev. 4.0.1</span>
+        <span><b>White:</b> customer side. <b>Canary:</b> agent side, never sent.</span>
       </div>
     </div>
   </div>
-</section>
 
-<!-- ── Modes ── -->
-<section id="modes" style="padding-top:0">
-  <div class="wrap">
-    <div class="reveal">
-      <p class="eyebrow">Six modes</p>
-      <h2>Every message a support shift <em>actually sends.</em></h2>
-    </div>
-    <div class="bento">
-      <div class="card reveal"><span class="tag inj">Composer</span><h3>💬 Chat reply</h3><p>Conversational, intro on the first message only, steps written as prose rather than bullet walls.</p></div>
-      <div class="card reveal"><span class="tag inj">Composer</span><h3>✉️ Email reply</h3><p>A touch more structured. Ends with "Best," because Intercom adds the signature itself.</p></div>
-      <div class="card reveal"><span class="tag inj">Composer</span><h3>📋 Conversation notes</h3><p>A 3 to 5 sentence past-tense summary for clean handoffs between shifts.</p></div>
-      <div class="card reveal"><span class="tag cp">Copy panel</span><h3>🔧 Tier 2 escalation</h3><p>Structured template with P1 to P5 priority. Unknown fields say "To be confirmed" instead of guessing.</p></div>
-      <div class="card reveal"><span class="tag cp">Copy panel</span><h3>⚡ Slack urgent</h3><p>Three to five sentences, reserved for issues that are both high urgency and high impact.</p></div>
-      <div class="card reveal"><span class="tag cp">Copy panel</span><h3>💳 Billing escalation</h3><p>Neutral internal note: what's disputed, the timeline, and the question for the billing team.</p></div>
-    </div>
-  </div>
-</section>
+  <!-- ── Guardrails ── -->
+  <section id="guardrails">
+    <div class="wrap">
+      <h2>Sounds like a person. Never makes things up.</h2>
+      <p class="section-lede">The same customer message, two drafts. Every rule that rejects the first one is written into the extension's prompts.</p>
 
-<!-- ── Guardrails ── -->
-<section id="guardrails" class="demo-section">
-  <div class="wrap guard-grid">
-    <div class="reveal">
-      <p class="eyebrow">Guardrails</p>
-      <h2>Sounds like a person. <em>Never makes things up.</em></h2>
-      <div class="rules">
-        <div class="rule"><div class="x"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.9l6 2.3v5c0 4-2.6 7.4-6 8.9-3.4-1.5-6-4.9-6-8.9v-5z" clip-rule="evenodd"/></svg></div><div><b>KB-only answers</b><span>No matching article? The draft says you're looking into it. No invented menus or steps.</span></div></div>
-        <div class="rule"><div class="x"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.3.7l2.8 2.8a1 1 0 001.4-1.4L11 9.6z" clip-rule="evenodd"/></svg></div><div><b>No unconfirmed promises</b><span>No ETAs, no "this will be fixed", no outcomes nobody signed off on.</span></div></div>
-        <div class="rule"><div class="x"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM7 8a1 1 0 112 0 1 1 0 01-2 0zm4 0a1 1 0 112 0 1 1 0 01-2 0zm-4.2 3.6a1 1 0 011.4.2 2.2 2.2 0 003.6 0 1 1 0 011.6 1.2 4.2 4.2 0 01-6.8 0 1 1 0 01.2-1.4z"/></svg></div><div><b>Never blames the customer</b><span>No "user error", no "this is a bug on our side" in customer-facing text.</span></div></div>
-        <div class="rule"><div class="x"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12l-6-3-6 3z" clip-rule="evenodd"/></svg></div><div><b>Agent context wins</b><span>Anything you type in Extra context is injected as the highest-priority instruction.</span></div></div>
-      </div>
-    </div>
-    <div class="compare reveal">
-      <div class="cmp bad">
-        <div class="who">✕ Generic chatbot</div>
-        <p><mark>Great question!</mark> I completely understand your frustration. <mark>Simply head to Settings → Security → Password Policy</mark> and toggle off expiry. <mark>This will be fixed in our next release</mark>, so you won't see it again!</p>
-      </div>
-      <div class="cmp good">
-        <div class="who">✓ Support Copilot</div>
-        <p>Hi Carlos, sorry for the trouble getting in. The quickest way back is the "Forgot password?" link on the sign-in page, which sends a reset link to the email on your account. If it doesn't arrive in a few minutes, let me know which address you sign in with and I'll check from our side.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── Build story ── -->
-<section id="story">
-  <div class="wrap">
-    <div class="reveal">
-      <p class="eyebrow">Build story</p>
-      <h2>Four versions, <em>each one a lesson.</em></h2>
-      <p class="section-lede">Built end to end by a support agent, not an engineer, using AI-assisted development. Every version shipped because the last one taught me something about how agents actually work.</p>
-    </div>
-    <div class="timeline">
-      <div class="tl reveal">
-        <div class="tl-ver">v1<small>Jan 2026</small></div>
-        <div class="tl-body">
-          <h3>Python prototype, auto-fired</h3>
-          <p>Generated a chat reply every time a conversation opened. One mode, one hardcoded prompt.</p>
-          <div class="lesson"><b>Lesson:</b> drafts nobody asked for are noise, and they burn API spend. Agents want control, not autopilot.</div>
+      <div class="proofs">
+        <div class="sheet bad">
+          <span class="label"><i class="ph-bold ph-x" aria-hidden="true"></i>Generic chatbot</span>
+          <div class="stamp">Rejected</div>
+          <p class="draft"><mark>Great question!</mark><sup>a</sup> <mark>I completely understand your frustration.</mark><sup>a</sup> <mark>Simply head to Settings &gt; Security &gt; Password Policy</mark><sup>b</sup> and toggle off expiry. <mark>This will be fixed in our next release</mark><sup>c</sup>, so you won't see it again!</p>
+          <ol class="notes">
+            <li><span>a</span>Banned opener. Reads as a bot.</li>
+            <li><span>b</span>Invented path. No help center article says this.</li>
+            <li><span>c</span>A promise nobody confirmed.</li>
+          </ol>
+        </div>
+        <div class="sheet good">
+          <span class="label"><i class="ph-bold ph-check" aria-hidden="true"></i>Support Copilot</span>
+          <div class="stamp">Approved</div>
+          <p class="draft">Hi Carlos, sorry for the trouble getting in. <span class="hl">The quickest way back is the "Forgot password?" link on the sign-in page</span>, which sends a reset link to the email on your account. If it doesn't arrive in a few minutes, let me know which address you sign in with and I'll check from our side.</p>
+          <ul class="why">
+            <li>Steps come from the matched help center article only.</li>
+            <li>Next action is the customer's, not a promise.</li>
+            <li>No blame, and no "bug on our side" in customer text.</li>
+            <li>Escalations have no path into the composer.</li>
+          </ul>
         </div>
       </div>
-      <div class="tl reveal">
-        <div class="tl-ver">v2<small>Feb 2026</small></div>
-        <div class="tl-body">
-          <h3>On-demand, multi-mode</h3>
-          <p>Rewritten as explicit one-click actions with per-mode prompts, help center search, and a manual Insert fallback.</p>
-          <div class="lesson"><b>Lesson:</b> the product isn't "AI replies". It's every message type a shift produces, each with its own format.</div>
-        </div>
-      </div>
-      <div class="tl reveal">
-        <div class="tl-ver">v3<small>Mar to Apr 2026</small></div>
-        <div class="tl-body">
-          <h3>Analysis panel, escalation safety, resilient selectors</h3>
-          <p>Added parallel triage analysis, moved escalations out of the composer, and gave every DOM selector a fallback chain with built-in diagnostics.</p>
-          <div class="lesson"><b>Lesson:</b> the riskiest failure was an internal escalation pasted where a customer could see it. Removing that path beat warning about it.</div>
-        </div>
-      </div>
-      <div class="tl reveal">
-        <div class="tl-ver">v4<small>Oct 2026</small></div>
-        <div class="tl-body">
-          <h3>Generalized for any Intercom workspace</h3>
-          <p>Company, agent, and knowledge base became settings. Runtime host permissions replaced hardcoded domains. Updated for Intercom's new TipTap composer.</p>
-          <div class="lesson"><b>Lesson:</b> a tool that only works for one team is a script. Configuration is what turns it into a product.</div>
+
+    </div>
+  </section>
+
+  <!-- ── How it works ── -->
+  <section id="how">
+    <div class="wrap">
+      <h2>Three files. No server.</h2>
+      <p class="section-lede">Plain JavaScript on Chrome Manifest V3. Your API key stays in local Chrome storage and calls go straight to Anthropic.</p>
+
+      <div class="how-grid">
+        <table class="route">
+          <thead><tr><th class="label">What happens</th><th class="label">Where</th></tr></thead>
+          <tbody>
+            <tr><td><b>Read the thread</b>Walks Intercom's DOM, shadow roots included, and labels every message as customer, agent, bot or system.</td><td class="file">content.js</td></tr>
+            <tr><td><b>Check the help center</b>Keywords from the latest customer message query your KB. The top three articles become the only allowed source.</td><td class="file">background.js</td></tr>
+            <tr><td><b>Draft and analyse at once</b>Two Claude Haiku 4.5 calls run through <code>Promise.all</code>, so the analysis adds no wait. About two seconds.</td><td class="file">background.js</td></tr>
+            <tr><td><b>Land it on the right side</b>Replies are pasted into the composer for review. Escalations stay in the popup's copy panel.</td><td class="file">popup.js</td></tr>
+          </tbody>
+        </table>
+
+        <div>
+          <div class="shots">
+            <figure class="shot"><img src="demo/main.png" alt="The real Support Copilot popup on its Draft tab, with reply and escalation buttons and the extra context field" loading="lazy"><figcaption>Draft tab</figcaption></figure>
+            <figure class="shot"><img src="demo/settings.png" alt="The real Support Copilot popup on its Settings tab, with API key, agent name, company, knowledge base URL and tone instructions" loading="lazy"><figcaption>Settings tab</figcaption></figure>
+          </div>
+          <ul class="facts">
+            <li><b>About a cent</b>per conversation on Haiku 4.5</li>
+            <li><b>Survives redesigns</b>every selector has a fallback chain</li>
+          </ul>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ── Architecture ── -->
-<section id="architecture" class="demo-section">
-  <div class="wrap">
-    <div class="center reveal">
-      <p class="eyebrow">Under the hood</p>
-      <h2>Three files. <em>Zero servers.</em></h2>
-      <p class="section-lede">Plain JavaScript on Manifest V3. Your API key stays in local Chrome storage and calls go straight to Anthropic.</p>
-    </div>
-    <div class="arch reveal">
-      <div class="node">
-        <div class="file">popup.js</div>
-        <h3>The UI</h3>
-        <ul><li>Mode buttons and settings</li><li>Analysis panel parsing</li><li>Rolling debug log</li></ul>
-      </div>
-      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12h15m-5-5l5 5-5 5"/></svg></div>
-      <div class="node">
-        <div class="file">content.js</div>
-        <h3>Inside Intercom</h3>
-        <ul><li>Shadow-DOM-aware extraction</li><li>Role detection with 4 fallbacks</li><li>Composer injection via paste</li></ul>
-      </div>
-      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12h15m-5-5l5 5-5 5"/></svg></div>
-      <div class="node">
-        <div class="file">background.js</div>
-        <h3>The brain</h3>
-        <ul><li>Help center keyword search</li><li>Per-mode system prompts</li><li>Parallel Claude calls</li></ul>
-      </div>
-    </div>
-    <div class="stack reveal">
-      <span>Chrome Manifest V3</span><span>Claude Haiku 4.5</span><span>Intercom</span><span>Zendesk-style KB API</span><span>Vanilla JS</span>
-    </div>
-  </div>
-</section>
+  <!-- ── Install ── -->
+  <section id="install">
+    <div class="wrap">
+      <h2>Running in three minutes.</h2>
+      <p class="section-lede">Open source and free to fork. You bring your own Claude API key.</p>
 
-<!-- ── Setup ── -->
-<section id="setup">
-  <div class="wrap">
-    <div class="reveal">
-      <p class="eyebrow">Setup</p>
-      <h2>Running in <em>three minutes.</em></h2>
-    </div>
-    <div class="setup-grid">
-      <ol class="steps reveal">
-        <li><div><b>Get a Claude API key</b><span>Create one at console.anthropic.com. A $5 credit covers hundreds of conversations.</span></div></li>
-        <li><div><b>Load the extension</b><span>Open <code>chrome://extensions</code>, turn on Developer mode, click <b style="display:inline">Load unpacked</b>, pick the folder.</span></div></li>
-        <li><div><b>Configure</b><span>In the popup's Settings tab, add your key, name, company, and optionally your help center search URL.</span></div></li>
-        <li><div><b>Open a conversation</b><span>Click a mode. Review, tweak, send.</span></div></li>
-      </ol>
-      <div class="term reveal">
-        <div class="term-bar">
-          <div class="dots"><i></i><i></i><i></i></div>
-          <span class="t">terminal</span>
-          <button class="copy-btn" id="copyCmd">Copy</button>
-        </div>
-<pre id="cmd"><span class="c"># grab the code</span>
-<span class="p">$</span> git clone <span class="s">https://github.com/4erosol/support-copilot-intercom</span>
+      <div class="install-grid">
+        <ol class="steps">
+          <li><div><b>Get a Claude API key</b><span>Create one at console.anthropic.com. A $5 credit covers hundreds of conversations.</span></div></li>
+          <li><div><b>Load the extension</b><span>Open <code>chrome://extensions</code>, turn on Developer mode, click Load unpacked and pick the folder.</span></div></li>
+          <li><div><b>Fill in Settings</b><span>Your key, name and company. Add a help center search URL and your team's tone rules if you have them.</span></div></li>
+          <li><div><b>Open a conversation</b><span>Tick a request type. Review, edit, send.</span></div></li>
+        </ol>
+        <div>
+          <div class="cmd">
+            <div class="cmd-head"><span class="label">Terminal</span><button class="copy" id="copyCmd"><i class="ph ph-copy" aria-hidden="true"></i>Copy</button></div>
+<pre><span class="c"># grab the code</span>
+<span class="p">$</span> git clone https://github.com/4erosol/support-copilot-intercom
 
 <span class="c"># then in Chrome</span>
-<span class="p">→</span> chrome://extensions
-<span class="p">→</span> Developer mode: on
-<span class="p">→</span> Load unpacked → <span class="s">support-copilot-intercom/</span></pre>
+<span class="p">&gt;</span> chrome://extensions
+<span class="p">&gt;</span> Developer mode: on
+<span class="p">&gt;</span> Load unpacked: support-copilot-intercom/</pre>
+          </div>
+          <div class="cmd-foot">
+            <a class="btn btn-ink" href="https://github.com/4erosol/support-copilot-intercom"><i class="ph ph-github-logo" aria-hidden="true"></i>Open the repo</a>
+            <a class="btn btn-line" href="https://github.com/4erosol/support-copilot-intercom/blob/main/CHANGELOG.md">Read the changelog</a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ── CTA ── -->
-<section style="padding-top:0">
-  <div class="wrap">
-    <div class="cta reveal">
-      <h2>Spend the shift on <em>the customer.</em></h2>
-      <p>Open source, free to fork, and built by someone who worked the queue.</p>
-      <div class="hero-ctas" style="margin-top:0">
-        <a class="btn btn-primary btn-lg" href="https://github.com/4erosol/support-copilot-intercom">Get it on GitHub</a>
-        <a class="btn btn-ghost btn-lg" href="#demo">Replay the demo</a>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
+</main>
 
 <footer>
   <div class="wrap foot">
-    <div class="logo"><img src="assets/icon.svg" alt="">Support Copilot</div>
-    <div>Built by <a href="https://github.com/4erosol">David Vasquez</a></div>
-    <div class="foot-links">
+    <a href="#top" class="brand"><img src="assets/icon.svg" alt="">Support Copilot</a>
+    <span>Built by <a href="https://github.com/4erosol">David Vasquez</a>, from his own support queue.</span>
+    <nav aria-label="Footer">
       <a href="https://github.com/4erosol/support-copilot-intercom">GitHub</a>
-      <a href="https://github.com/4erosol/support-copilot-intercom/blob/main/CHANGELOG.md">Changelog</a>
       <a href="https://github.com/4erosol/support-copilot-intercom/blob/main/LICENSE">MIT License</a>
-    </div>
+    </nav>
   </div>
 </footer>
 
 <script>
 (() => {
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $ = id => document.getElementById(id);
+  const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  // ── Hero browser flattens as you scroll ──
-  const browser = $('heroBrowser');
-  const onScroll = () => browser.classList.toggle('flat', window.scrollY > 60);
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  // ── Sample tickets ────────────────────────────
+  const TICKETS = [
+    {
+      no: '4471', name: 'Carlos Mendez', first: 'Carlos', subject: "Can't log in", channel: 'Email',
+      thread: [
+        ['c', '8:52 am', 'Hi team, I can\'t log in to the app. I keep getting an error that says "Your password has expired." Could you help me reset it or get back into my account?\n\nThanks,\nCarlos'],
+        ['a', '9:04 am', "Thanks Carlos, I'm taking a look now."],
+        ['c', '9:06 am', "Great, it started this morning. I haven't changed anything."]
+      ],
+      kb: 'Resetting an expired password',
+      analysis: {
+        issue: 'Locked out by an expired password since this morning.',
+        category: 'Authentication',
+        missing: 'Email address used to sign in. Whether the reset email arrives.',
+        next: 'Share the expired-password reset steps and confirm the sign-in email.'
+      },
+      out: {
+        chat: `Thanks for the extra detail, Carlos. When a password expires, the quickest way back in is the "Forgot password?" link on the sign-in page. It sends a reset link to the email on your account, and the link stays valid for 24 hours.
 
-  // ── Reveal on scroll ──
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-  document.querySelectorAll('.reveal').forEach((el, i) => {
-    el.style.transitionDelay = `${(i % 4) * 70}ms`;
-    io.observe(el);
-  });
-
-  // ── Copy setup command ──
-  $('copyCmd').addEventListener('click', () => {
-    navigator.clipboard?.writeText('git clone https://github.com/4erosol/support-copilot-intercom').then(() => {
-      $('copyCmd').textContent = 'Copied!';
-      setTimeout(() => $('copyCmd').textContent = 'Copy', 1800);
-    });
-  });
-
-  // ── Interactive demo ──
-  const ANALYSIS = {
-    issue:    'Customer is locked out by an expired password since this morning.',
-    category: 'Authentication',
-    missing:  'Email address used to sign in. Whether the reset email arrives.',
-    next:     'Share the expired-password reset steps and confirm the sign-in email.'
-  };
-
-  const MODES = {
-    chat: {
-      label: 'Chat reply', esc: false, kb: true,
-      text: `Thanks for the extra detail, Carlos. When a password expires, the quickest way back in is the "Forgot password?" link on the sign-in page. It sends a reset link to the email on your account, and the link stays valid for 24 hours.
-
-Could you give that a try and let me know if the email shows up? If it doesn't, send me the address you sign in with and I'll check from our side.`
-    },
-    email: {
-      label: 'Email reply', esc: false, kb: true,
-      text: `Hi Carlos,
+Could you give that a try and let me know if the email shows up? If it doesn't, send me the address you sign in with and I'll check from our side.`,
+        email: `Hi Carlos,
 
 Thank you for following up, and sorry for the trouble getting into your account.
 
@@ -856,15 +740,9 @@ When a password expires, the quickest way back in is the "Forgot password?" link
 
 If the email doesn't arrive within a few minutes, reply with the address you use to sign in and I'll look into it from our side.
 
-Best,`
-    },
-    notes: {
-      label: 'Conversation notes', esc: false, kb: true,
-      text: `Customer reported being locked out by a "password has expired" error that started this morning, with no account changes on their side. Shared the self-service reset steps from the expired-password help article. Asked the customer to confirm their sign-in email if the reset email does not arrive. Awaiting customer reply.`
-    },
-    tier2: {
-      label: 'Tier 2 escalation', esc: true, kb: false,
-      text: `Priority: P4
+Best,`,
+        notes: `Customer reported being locked out by a "password has expired" error that started this morning, with no account changes on their side. Shared the self-service reset steps from the expired-password help article. Asked the customer to confirm their sign-in email if the reset email does not arrive. Awaiting customer reply.`,
+        tier2: `Priority: P4
 
 Description of the issue: Customer cannot log in. Sign-in returns "Your password has expired." Started this morning, no account changes reported.
 
@@ -876,102 +754,265 @@ Error messages: "Your password has expired."
 
 Time of error: This morning (exact time to be confirmed).
 
-Screenshots attached: To be confirmed.`
+Screenshots attached: To be confirmed.`,
+        slack: `Heads up: Carlos Mendez is locked out with a "password has expired" error that started this morning, with no changes on their side. Only one user is confirmed so far and reset steps have been shared. Not urgent yet, but if more customers report the same expiry error today it could point to a policy change affecting multiple accounts.`,
+        billing: `No billing dispute or request in this conversation. The customer is asking for help regaining account access after a password expiry error. No action needed from the billing team.`
+      },
+      autoplay: 'email'
     },
-    slack: {
-      label: 'Slack urgent', esc: true, kb: false,
-      text: `Heads up: Carlos Mendez is locked out with a "password has expired" error that started this morning, with no changes on their side. Only one user is confirmed so far and reset steps have been shared. Not urgent yet, but if more customers report the same expiry error today it could point to a policy change affecting multiple accounts.`
-    },
-    billing: {
-      label: 'Billing escalation', esc: true, kb: false,
-      text: `No billing dispute or request in this conversation. The customer is asking for help regaining account access after a password expiry error. No action needed from the billing team.`
-    }
-  };
+    {
+      no: '4486', name: 'Priya Raman', first: 'Priya', subject: 'Charged twice this month', channel: 'Chat',
+      thread: [
+        ['c', '2:17 pm', 'Hi, I upgraded us from Starter to Growth on the 12th and now there are two charges on our card this month, $49 and $118.40. Why are we paying twice?'],
+        ['c', '2:18 pm', 'Our finance team is asking me about it today.']
+      ],
+      kb: 'How billing works when you change plans',
+      analysis: {
+        issue: 'Two charges in one month after a mid-cycle plan upgrade.',
+        category: 'Billing',
+        missing: 'Workspace name, to match both charges to the account.',
+        next: 'Explain prorated upgrade charges, then confirm both amounts with billing.'
+      },
+      out: {
+        chat: `Hi Priya, thank you for reaching out. My name is David, and I'm part of the Customer Care team.
 
+Two charges in the month you upgrade can look odd, so it's a fair question. When a plan is upgraded partway through a billing cycle, a separate prorated charge covers the difference between Starter and Growth for the rest of that cycle. From your next renewal, there's a single charge at the Growth price.
+
+So I can confirm both charges match that for your account, could you tell me the workspace name you're billing under?`,
+        email: `Hi Priya,
+
+Thank you for reaching out about the two charges this month.
+
+When a plan is upgraded partway through a billing cycle, a separate prorated charge covers the difference between Starter and Growth for the rest of that cycle. From your next renewal, you'll see a single charge at the Growth price.
+
+To confirm both charges match that for your account, could you reply with the workspace name you're billing under? I'll check them as soon as I have it.
+
+Best,`,
+        notes: `Customer reported two card charges this month ($49 and $118.40) after upgrading from Starter to Growth on the 12th. Shared the help center explanation of prorated charges on mid-cycle upgrades. Asked for the billing workspace name to verify both charges. Customer's finance team is waiting on an answer today.`,
+        tier2: `Priority: P5
+
+Description of the issue: Customer sees two charges this month ($49 and $118.40) after upgrading from Starter to Growth on the 12th. No error or malfunction reported.
+
+Entity affected: Priya Raman's workspace (name to be confirmed)
+
+Links to relevant details: To be confirmed.
+
+Error messages: None reported.
+
+Time of error: Upgrade on the 12th. Both charges in the current billing month.
+
+Screenshots attached: To be confirmed.`,
+        slack: `Billing question from Priya Raman, not an outage: two charges this month after a Starter to Growth upgrade on the 12th, which matches the prorated charge described in the help center. Only this customer is affected and the explanation has been shared. Her finance team wants an answer today, but this doesn't meet the bar for an urgent Slack escalation. A billing note is the better route.`,
+        billing: `Customer is asking about what looks like a double charge this month: $49 and $118.40 on the same card.
+
+Account: Priya Raman. Upgraded from Starter to Growth on the 12th. Workspace name to be confirmed.
+
+Timeline: Upgrade on the 12th. Both charges appeared in the same billing month. Customer contacted support today because her finance team is asking.
+
+Question for billing: Please confirm the $118.40 charge is the prorated upgrade difference and that the next renewal will be a single Growth charge. If it is not, please advise on refunding the duplicate.`
+      },
+      autoplay: 'billing'
+    },
+    {
+      no: '4502', name: 'Jonas Weber', first: 'Jonas', subject: 'CSV export keeps failing', channel: 'Chat',
+      thread: [
+        ['c', '10:41 am', "Exports are broken for us. Any report over about 10,000 rows fails with 'Export failed (code 504)'. Smaller ones work fine."],
+        ['a', '10:44 am', "Hi Jonas, thank you for reaching out. My name is David, and I'm part of the Customer Care team. Let me look into this for you."],
+        ['c', '10:46 am', 'Thanks. Three people on my team hit it this morning, and I need the Q3 pipeline export for a board meeting at 9am tomorrow.']
+      ],
+      kb: null,
+      analysis: {
+        issue: 'CSV exports over roughly 10k rows fail with a 504 error.',
+        category: 'Exports',
+        missing: 'Report name, time of the first failure, browser.',
+        next: 'File a Tier 2 escalation now. Deadline is 9am tomorrow.'
+      },
+      out: {
+        chat: `Thanks for those details, Jonas, and I'm sorry this is getting in the way before your board meeting. I don't want to give you steps that won't help, so I'm reviewing the export error further from our side now.
+
+In the meantime, could you send me the name of the Q3 pipeline report and roughly what time the first export failed this morning? That will help me get this in front of the right people quickly.`,
+        email: `Hi Jonas,
+
+Thank you for following up, and I'm sorry the exports are failing with a board meeting coming up.
+
+I'm reviewing the "Export failed (code 504)" error further from our side so I don't send you steps that won't help. To speed that up, could you reply with the name of the Q3 pipeline report and roughly when the first export failed this morning?
+
+I'll follow up as soon as I have more to share.
+
+Best,`,
+        notes: `Customer reported CSV exports failing with "Export failed (code 504)" for reports over roughly 10,000 rows. Smaller exports work. Three users on the customer's team hit the error this morning. No help center article covers it, so no workaround was shared. Requested the report name and time of first failure. Customer needs the Q3 pipeline export before a board meeting at 9am tomorrow.`,
+        tier2: `Priority: P3
+
+Description of the issue: CSV exports over roughly 10,000 rows fail with "Export failed (code 504)". Exports under that size complete normally.
+
+Entity affected: Jonas Weber's workspace, 3 users confirmed
+
+Links to relevant details: To be confirmed.
+
+Error messages: "Export failed (code 504)"
+
+Time of error: This morning. First failure time to be confirmed.
+
+Screenshots attached: To be confirmed.`,
+        slack: `Urgent: CSV exports over roughly 10,000 rows are failing with "Export failed (code 504)" for Jonas Weber's team, with three users confirmed this morning. Smaller exports still work, and there's no help center workaround to share. He needs the Q3 pipeline export for a board meeting at 9am tomorrow, and a Tier 2 escalation is being filed now. Can someone from engineering take a look today?`,
+        billing: `No billing dispute or request in this conversation. The customer is reporting failing CSV exports. No action needed from the billing team.`
+      },
+      autoplay: 'tier2'
+    }
+  ];
+
+  const ESC = new Set(['tier2', 'slack', 'billing']);
+  const LABEL = { chat: 'Chat reply', email: 'Email reply', notes: 'Conversation notes', tier2: 'Tier 2 escalation', slack: 'Slack urgent', billing: 'Billing escalation' };
+
+  let ticket = TICKETS[0];
   let runId = 0;
+  const btns = [...document.querySelectorAll('.cp-btn')];
   const sleep = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
 
-  async function typeInto(el, text, speed, id) {
-    if (reduced) { el.textContent = text; return; }
-    el.textContent = '';
-    el.classList.add('cursor');
-    const chunk = 3;
-    for (let i = 0; i < text.length; i += chunk) {
-      if (id !== runId) return;
-      el.textContent = text.slice(0, i + chunk);
-      if (el.scrollHeight > el.clientHeight) el.scrollTop = el.scrollHeight;
-      await sleep(speed);
-    }
-    el.classList.remove('cursor');
+  // ── Rendering ─────────────────────────────────
+  function renderTickets() {
+    $('tickets').innerHTML = TICKETS.map((t, i) => `
+      <button class="ticket" data-i="${i}" aria-pressed="${t === ticket}">
+        <span class="no">#${t.no}</span>
+        <span class="who">${esc(t.first)}<span class="last"> ${esc(t.name.slice(t.first.length + 1))}</span></span>
+        <span class="what">${t.channel}: ${esc(t.subject)}</span>
+      </button>`).join('');
+    $('tickets').querySelectorAll('.ticket').forEach(b => b.addEventListener('click', () => selectTicket(TICKETS[+b.dataset.i], true)));
   }
 
-  function setStatus(msg, cls = '') { const s = $('status'); s.textContent = msg; s.className = 'status ' + cls; }
+  const initials = name => name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+  function renderThread() {
+    const email = ticket.channel === 'Email';
+    $('icName').textContent = ticket.name;
+    $('icSubj').textContent = ticket.subject;
+    $('icChannel').innerHTML = email
+      ? '<i class="ph ph-envelope-simple" aria-hidden="true"></i>Email<i class="ph-bold ph-caret-down" aria-hidden="true"></i>'
+      : '<i class="ph ph-chat-circle" aria-hidden="true"></i>Reply<i class="ph-bold ph-caret-down" aria-hidden="true"></i>';
+    $('thread').innerHTML = ticket.thread.map(([who, time, text]) => {
+      const admin = who === 'a';
+      return `
+      <div class="ic-msg ${admin ? 'admin' : 'customer'}${email ? ' email' : ''}">
+        <span class="ic-av" aria-hidden="true">${admin ? 'D' : initials(ticket.name)}</span>
+        <div class="ic-bubble">${esc(text)}<div class="ic-meta">${email ? '<i class="ph ph-envelope-simple" aria-hidden="true"></i>' : ''}${admin ? 'You' : esc(ticket.first)}, ${time}</div></div>
+      </div>`;
+    }).join('');
+  }
 
   function resetComposer() {
     $('composerText').textContent = '';
-    $('composerPh').style.display = '';
-    $('composer').classList.remove('filled');
-    $('sendBtn').classList.remove('ready');
-    $('composerNote').textContent = 'Intercom composer';
+    $('composerPh').hidden = false;
+    $('composer').classList.remove('filled', 'flash');
+    $('send').classList.remove('ready');
+    $('composerNote').innerHTML = '';
   }
 
+  // Mirrors popup.js: setStatus, hidePanels, renderAnalysis, showDraftPanel, showEscalationPanel
+  function setStatus(msg, type = '') { $('statusBar').textContent = msg; $('statusBar').className = 'cp-status ' + type; }
+  function hidePanels() { $('draftPanel').classList.remove('visible'); $('escalationPanel').classList.remove('visible'); }
+  function renderAnalysis(a) {
+    $('valIssue').textContent = a.issue;
+    $('valCategory').textContent = a.category;
+    $('valMissing').textContent = a.missing;
+    $('valNext').textContent = a.next;
+    $('analysisPanel').classList.add('visible');
+  }
+
+  function selectTicket(t, user) {
+    if (t === ticket && user) return;
+    ticket = t;
+    runId++;
+    btns.forEach(b => { b.classList.remove('active'); b.disabled = false; });
+    renderTickets();
+    renderThread();
+    resetComposer();
+    hidePanels();
+    $('analysisPanel').classList.remove('visible');
+    $('convInfo').textContent = 'Open a conversation in Intercom';
+    setStatus('');
+    if (user) setTimeout(() => run(ticket.autoplay), reduced ? 0 : 350);
+  }
+
+  function inject(text) {
+    const c = $('composer');
+    $('composerPh').hidden = true;
+    $('composerText').textContent = text;
+    c.classList.remove('flash');
+    void c.offsetWidth;
+    c.classList.add('filled', 'flash');
+    c.querySelector('.ic-body').scrollTop = 0;
+    $('send').classList.add('ready');
+  }
+
+  // ── Run a request: same sequence and messages as generate() in popup.js ──
   async function run(mode) {
     const id = ++runId;
-    const cfg = MODES[mode];
-    const btns = document.querySelectorAll('.mode');
-    btns.forEach(b => { b.classList.toggle('on', b.dataset.mode === mode); b.disabled = true; });
-
-    $('out').classList.remove('show', 'esc');
-    $('kbNote').classList.remove('show');
-    resetComposer();
-
+    const isEsc = ESC.has(mode);
+    btns.forEach(b => { b.classList.toggle('active', b.dataset.mode === mode); b.disabled = true; });
     setStatus('Reading conversation...', 'info');
+    hidePanels();
+    resetComposer();
     await sleep(450);
     if (id !== runId) return;
 
-    if (cfg.kb) { $('kbNote').classList.add('show'); }
+    $('convInfo').textContent = `${ticket.name} · ${ticket.channel}`;
     setStatus('Generating...', 'info');
-
-    // shimmer placeholders while "Claude" works
-    $('analysis').classList.add('show');
-    document.querySelectorAll('#analysis .v').forEach(v => v.innerHTML = '<span class="shimmer"></span><span class="shimmer"></span>');
-    await sleep(900);
+    await sleep(1500);
     if (id !== runId) return;
 
-    // analysis arrives (parallel call)
-    await Promise.all(Object.entries(ANALYSIS).map(([k, v]) => typeInto(document.querySelector(`#analysis .v[data-k="${k}"]`), v, 14, id)));
-    if (id !== runId) return;
-
-    if (cfg.esc) {
-      $('out').classList.add('show', 'esc');
-      $('outTitle').textContent = cfg.label.toUpperCase() + ' DRAFT';
-      $('outBadge').textContent = 'Copy';
-      await typeInto($('outText'), cfg.text, 10, id);
-      if (id !== runId) return;
-      setStatus('Review and copy the escalation draft. Never sent to the customer.', 'ok');
-    } else {
-      $('out').classList.add('show');
-      $('outTitle').textContent = 'Draft';
-      $('outBadge').textContent = cfg.label;
-      $('composerPh').style.display = 'none';
-      $('composer').classList.add('filled');
-      $('composerNote').textContent = 'Injected by Support Copilot';
-      $('outText').textContent = cfg.text;
-      await typeInto($('composerText'), cfg.text, 10, id);
-      if (id !== runId) return;
-      $('sendBtn').classList.add('ready');
-      setStatus('Draft injected. Review in the Intercom composer.', 'ok');
-    }
     btns.forEach(b => b.disabled = false);
+    renderAnalysis(ticket.analysis);
+    const text = ticket.out[mode];
+
+    if (isEsc) {
+      $('escalationText').value = text;
+      $('escalationText').scrollTop = 0;
+      $('escalationTitle').textContent = LABEL[mode].toUpperCase() + ' DRAFT';
+      $('escalationPanel').classList.add('visible');
+      $('composerNote').innerHTML = '<b>Composer untouched.</b> Escalations stay in the popup.';
+      setStatus('Review and copy the escalation draft below.', 'ok');
+    } else {
+      inject(text);
+      $('composerNote').innerHTML = '<b>Pasted into the composer by Support Copilot.</b> Review it, then send.';
+      $('draftText').value = text;
+      $('draftText').scrollTop = 0;
+      $('draftBadge').textContent = LABEL[mode];
+      $('draftPanel').classList.add('visible');
+      setStatus('Draft injected. Review in Intercom compose box.', 'ok');
+    }
   }
 
-  document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => run(b.dataset.mode)));
+  btns.forEach(b => b.addEventListener('click', () => run(b.dataset.mode)));
+  $('btnInsert').addEventListener('click', () => { inject($('draftText').value); setStatus('Inserted.', 'ok'); });
 
-  // Auto-play the first run once the demo scrolls into view
-  let autoplayed = false;
-  new IntersectionObserver((entries, obs) => {
-    if (entries[0].isIntersecting && !autoplayed) { autoplayed = true; obs.disconnect(); setTimeout(() => run('email'), 500); }
-  }, { threshold: 0.25 }).observe(document.querySelector('.popup'));
+  // ── Copy buttons ──────────────────────────────
+  function copy(btn, text, plain) {
+    navigator.clipboard?.writeText(text).then(() => {
+      const html = btn.innerHTML;
+      btn.innerHTML = plain ? 'Copied!' : '<i class="ph ph-check" aria-hidden="true"></i>Copied';
+      setTimeout(() => btn.innerHTML = html, 1600);
+    });
+  }
+  $('btnCopyDraft').addEventListener('click', e => copy(e.currentTarget, $('draftText').value, true));
+  $('btnCopyEsc').addEventListener('click', e => copy(e.currentTarget, $('escalationText').value, true));
+  $('copyCmd').addEventListener('click', e => copy(e.currentTarget, 'git clone https://github.com/4erosol/support-copilot-intercom'));
+
+  // ── Current section in the header ─────────────
+  const links = [...document.querySelectorAll('.tabs a[href^="#"]')];
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      links.forEach(a => a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + en.target.id)));
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  ['demo', 'guardrails', 'how', 'install'].forEach(id => spy.observe($(id)));
+
+  // ── Start ─────────────────────────────────────
+  selectTicket(TICKETS[0], false);
+  const start = new IntersectionObserver((entries, obs) => {
+    if (entries[0].isIntersecting) { obs.disconnect(); setTimeout(() => run(ticket.autoplay), reduced ? 0 : 700); }
+  }, { threshold: 0.5 });
+  start.observe(document.querySelector('.cp'));
 })();
 </script>
 </body>
