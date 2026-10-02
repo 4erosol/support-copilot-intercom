@@ -207,6 +207,7 @@
   .ic-msg.email .ic-bubble { flex: 1; padding: 16px 18px 12px; border-radius: 12px; }
   .ic-meta { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px; color: var(--ic-muted); white-space: normal; }
   .ic-msg:not(.email) .ic-meta { margin-top: 4px; }
+  .ic-to { margin: -4px 0 10px; font-size: 12px; color: var(--ic-muted); }
 
   .ic-composer { margin: 0 12px 12px; background: var(--ic-field); border: 1px solid var(--ic-line); border-radius: 12px; transition: border-color .3s, box-shadow .4s var(--ease); }
   .ic-composer.filled { border-color: #6B7BF0; }
@@ -246,6 +247,7 @@
     --bg: #F7F8FB; --surface: #FFFFFF; --border: #E8EAF0; --border-strong: #D4D8E2;
     --success: #1FAA70; --danger: #DC3838; --danger-soft: #FFF1F1;
     --radius-sm: 6px; --radius: 8px;
+    --ink-page: #1F35B5;
     --shadow-sm: 0 1px 2px rgba(79, 70, 229, 0.05);
     width: 100%; max-width: 420px;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
@@ -296,6 +298,22 @@
   .cp-btn.escalation:hover { border-color: var(--danger); background: var(--danger-soft); }
   .cp-btn.escalation.active { border-color: var(--danger); background: var(--danger-soft); box-shadow: 0 0 0 3px #FFE0E0; }
   .cp-btn.wide { grid-column: span 2; }
+  .cp-btn { position: relative; }
+  .cp-btn.suggest::after {
+    content: ''; position: absolute; inset: -5px; border-radius: 12px; pointer-events: none;
+    border: 2px solid var(--ink-page); animation: suggest 1.6s var(--ease) infinite;
+  }
+  .cp-btn.suggest::before {
+    content: 'Try this'; position: absolute; top: -11px; right: 10px; z-index: 1; pointer-events: none;
+    padding: 2px 8px; border-radius: 999px; background: var(--ink-page); color: #fff;
+    font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  }
+  @keyframes suggest {
+    0% { opacity: 1; box-shadow: 0 0 0 0 rgba(31, 53, 181, .45); }
+    70% { opacity: .85; box-shadow: 0 0 0 10px rgba(31, 53, 181, 0); }
+    100% { opacity: 1; box-shadow: 0 0 0 0 rgba(31, 53, 181, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .cp-btn.suggest::after { animation: none; } }
   .cp :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
   .cp textarea {
@@ -491,7 +509,7 @@
 
     <div class="demo-head" id="demo">
       <h2>Try it on a sample ticket.</h2>
-      <p class="section-lede">Pick a ticket, then tick what you need. <b>Left</b> is the Intercom conversation the customer is in. <b>Right</b> is the Support Copilot popup, which only you see.</p>
+      <p class="section-lede">Pick a ticket, then click a button in the popup. <b>Left</b> is the Intercom conversation the customer is in. <b>Right</b> is the Support Copilot popup, which only you see.</p>
     </div>
 
     <!-- ── Demo form ── -->
@@ -717,9 +735,9 @@
     {
       no: '4471', name: 'Carlos Mendez', first: 'Carlos', subject: "Can't log in", channel: 'Email',
       thread: [
-        ['c', '8:52 am', 'Hi team, I can\'t log in to the app. I keep getting an error that says "Your password has expired." Could you help me reset it or get back into my account?\n\nThanks,\nCarlos'],
-        ['a', '9:04 am', "Thanks Carlos, I'm taking a look now."],
-        ['c', '9:06 am', "Great, it started this morning. I haven't changed anything."]
+        ['c', '8:52 am', 'Hi team,\n\nI can\'t log in to the app. I keep getting an error that says "Your password has expired." Could you help me reset it or get back into my account?\n\nThanks,\nCarlos'],
+        ['a', '9:04 am', "Hi Carlos,\n\nThanks for reaching out. I'm taking a look at this now and will get back to you shortly.\n\nBest,\nDavid"],
+        ['c', '9:06 am', "Hi David,\n\nGreat, thank you. It started this morning, and I haven't changed anything on my side.\n\nCarlos"]
       ],
       kb: 'Resetting an expired password',
       analysis: {
@@ -757,8 +775,7 @@ Time of error: This morning (exact time to be confirmed).
 Screenshots attached: To be confirmed.`,
         slack: `Heads up: Carlos Mendez is locked out with a "password has expired" error that started this morning, with no changes on their side. Only one user is confirmed so far and reset steps have been shared. Not urgent yet, but if more customers report the same expiry error today it could point to a policy change affecting multiple accounts.`,
         billing: `No billing dispute or request in this conversation. The customer is asking for help regaining account access after a password expiry error. No action needed from the billing team.`
-      },
-      autoplay: 'email'
+      }
     },
     {
       no: '4486', name: 'Priya Raman', first: 'Priya', subject: 'Charged twice this month', channel: 'Chat',
@@ -810,8 +827,7 @@ Account: Priya Raman. Upgraded from Starter to Growth on the 12th. Workspace nam
 Timeline: Upgrade on the 12th. Both charges appeared in the same billing month. Customer contacted support today because her finance team is asking.
 
 Question for billing: Please confirm the $118.40 charge is the prorated upgrade difference and that the next renewal will be a single Growth charge. If it is not, please advise on refunding the duplicate.`
-      },
-      autoplay: 'billing'
+      }
     },
     {
       no: '4502', name: 'Jonas Weber', first: 'Jonas', subject: 'CSV export keeps failing', channel: 'Chat',
@@ -856,12 +872,12 @@ Time of error: This morning. First failure time to be confirmed.
 Screenshots attached: To be confirmed.`,
         slack: `Urgent: CSV exports over roughly 10,000 rows are failing with "Export failed (code 504)" for Jonas Weber's team, with three users confirmed this morning. Smaller exports still work, and there's no help center workaround to share. He needs the Q3 pipeline export for a board meeting at 9am tomorrow, and a Tier 2 escalation is being filed now. Can someone from engineering take a look today?`,
         billing: `No billing dispute or request in this conversation. The customer is reporting failing CSV exports. No action needed from the billing team.`
-      },
-      autoplay: 'tier2'
+      }
     }
   ];
 
   const ESC = new Set(['tier2', 'slack', 'billing']);
+  const SUGGEST = { '4471': 'email', '4486': 'billing', '4502': 'tier2' };
   const LABEL = { chat: 'Chat reply', email: 'Email reply', notes: 'Conversation notes', tier2: 'Tier 2 escalation', slack: 'Slack urgent', billing: 'Billing escalation' };
 
   let ticket = TICKETS[0];
@@ -894,7 +910,7 @@ Screenshots attached: To be confirmed.`,
       return `
       <div class="ic-msg ${admin ? 'admin' : 'customer'}${email ? ' email' : ''}">
         <span class="ic-av" aria-hidden="true">${admin ? 'D' : initials(ticket.name)}</span>
-        <div class="ic-bubble">${esc(text)}<div class="ic-meta">${email ? '<i class="ph ph-envelope-simple" aria-hidden="true"></i>' : ''}${admin ? 'You' : esc(ticket.first)}, ${time}</div></div>
+        <div class="ic-bubble">${email && !admin ? '<div class="ic-to">to: support@intercom-mail.com</div>' : ''}${esc(text)}<div class="ic-meta">${email ? '<i class="ph ph-envelope-simple" aria-hidden="true"></i>' : ''}${admin ? 'You' : esc(ticket.first)}, ${time}</div></div>
       </div>`;
     }).join('');
   }
@@ -904,7 +920,7 @@ Screenshots attached: To be confirmed.`,
     $('composerPh').hidden = false;
     $('composer').classList.remove('filled', 'flash');
     $('send').classList.remove('ready');
-    $('composerNote').innerHTML = '';
+    $('composerNote').innerHTML = `Nothing happens until you click a button in the popup. Try <b>${LABEL[SUGGEST[ticket.no]]}</b>.`;
   }
 
   // Mirrors popup.js: setStatus, hidePanels, renderAnalysis, showDraftPanel, showEscalationPanel
@@ -922,7 +938,7 @@ Screenshots attached: To be confirmed.`,
     if (t === ticket && user) return;
     ticket = t;
     runId++;
-    btns.forEach(b => { b.classList.remove('active'); b.disabled = false; });
+    btns.forEach(b => { b.classList.remove('active'); b.disabled = false; b.classList.toggle('suggest', b.dataset.mode === SUGGEST[t.no]); });
     renderTickets();
     renderThread();
     resetComposer();
@@ -930,7 +946,6 @@ Screenshots attached: To be confirmed.`,
     $('analysisPanel').classList.remove('visible');
     $('convInfo').textContent = 'Open a conversation in Intercom';
     setStatus('');
-    if (user) setTimeout(() => run(ticket.autoplay), reduced ? 0 : 350);
   }
 
   function inject(text) {
@@ -948,10 +963,11 @@ Screenshots attached: To be confirmed.`,
   async function run(mode) {
     const id = ++runId;
     const isEsc = ESC.has(mode);
-    btns.forEach(b => { b.classList.toggle('active', b.dataset.mode === mode); b.disabled = true; });
+    btns.forEach(b => { b.classList.toggle('active', b.dataset.mode === mode); b.classList.remove('suggest'); b.disabled = true; });
     setStatus('Reading conversation...', 'info');
     hidePanels();
     resetComposer();
+    $('composerNote').innerHTML = '';
     await sleep(450);
     if (id !== runId) return;
 
@@ -1009,10 +1025,6 @@ Screenshots attached: To be confirmed.`,
 
   // ── Start ─────────────────────────────────────
   selectTicket(TICKETS[0], false);
-  const start = new IntersectionObserver((entries, obs) => {
-    if (entries[0].isIntersecting) { obs.disconnect(); setTimeout(() => run(ticket.autoplay), reduced ? 0 : 700); }
-  }, { threshold: 0.5 });
-  start.observe(document.querySelector('.cp'));
 })();
 </script>
 </body>
